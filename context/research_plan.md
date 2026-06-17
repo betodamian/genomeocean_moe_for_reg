@@ -28,12 +28,13 @@ This decomposes into three sub-questions that mirror and extend Junho's RQ1 (com
 |----|-----------|-------------|
 | P1 | `routing_concat` (864-d) > `embedding_only` (768-d) on the same MoE backbone for all three elements, paired across leave-one-genome-out folds | No significant paired improvement (BH-FDR q < 0.05) |
 | P2 | Best routing-aware detector > every named classical tool and every named dense LGM on held-out genomes (AUPRC, boundary-F1) | A dense LGM or classical tool matches/beats it within bootstrap CI |
-| P3 | ≥1 expert per element class shows significant log₂ enrichment over the marginal-masked null; ablating it raises element-token cross-entropy with a Difference-in-Differences (DiD) ≫ 0 vs CDS control | No causal expert exists for any class (DiD CI overlaps 0) |
+| P3 | ≥1 expert per element class shows significant log₂ enrichment over the marginal-masked null; ablating it raises element-token cross-entropy with a Difference-in-Differences (DiD) ≫ 0 vs **matched intergenic non-element control** (not CDS) | No causal expert exists for any class (DiD CI overlaps 0) |
 | P4 | Upcycled regulatory experts are causal (DiD ≫ 0); scratch counterparts are weaker or causally null | Scratch matches upcycled on causality |
 | P5 | Routing detectors transfer across phyla better than dense embeddings (smaller held-out-phylum performance drop) | Routing transfer ≤ embedding transfer |
 | P6 | Bacterial (in-domain) promoter routing recovers, unlike the **eukaryotic GUE promoter** task where Junho saw routing collapse (routing_only MCC 0.039 vs embedding 0.779) | Routing collapses on in-domain bacterial promoters too |
+| P7 | **The win is regulatory, not structural.** Routing discriminates each element from its **same-context, same-position decoy** (e.g., promoter vs non-promoter intergenic; promoter vs RBS), and the advantage survives **partialling out** the known structural-class routing axis (Junho's intergenic/CDS detectors) | Discrimination collapses to chance once structural class/position is held fixed or partialled out — i.e., the model only re-detected "intergenic vs coding" |
 
-P6 is a deliberate honesty hook: Junho's *only* promoter result was **out-of-domain eukaryotic** and routing failed there. This plan tests whether **in-domain bacterial** promoters behave differently. We commit to reporting this regardless of outcome.
+P6 is a deliberate honesty hook: Junho's *only* promoter result was **out-of-domain eukaryotic** and routing failed there. This plan tests whether **in-domain bacterial** promoters behave differently. P7 is the second honesty hook and the more dangerous one: because Junho *proved* the routing channel already encodes intergenic-vs-CDS (his L6 E7 intergenic detector, +1.75), a naive routing "win" could be entirely that structural shortcut rather than anything regulatory. Every primary result in this plan is therefore defined against **same-context, same-position decoys** (§4c–4d), and the causal test (§8b) controls against matched intergenic non-element tokens, not CDS. We commit to reporting P6 and P7 regardless of outcome.
 
 ---
 
@@ -97,9 +98,26 @@ All LGMs are evaluated with the **identical frozen-backbone probing protocol** (
 - **RhoTermPredict** curated positives.
 - **Intrinsic terminators** (hairpin + poly-U; TransTermHP/RNIE-labeled) included as the *contrastive* class — Rho-vs-intrinsic discrimination is the discriminating test where motif tools are weakest.
 
-### 4c. Negative sets and confound matching
-- Negatives are GC- and length-matched intergenic/genic windows lacking the element, plus **hard decoys**: intrinsic terminators as decoys for Rho terminators; leaderless starts as decoys for RBS; non-promoter intergenic for promoters.
-- Confounds explicitly controlled (regression covariates and matched sampling): **GC content, element/window length, genic vs intergenic context, strand, and BPE-boundary phase.** This mirrors Junho's discipline (his marginal-masked P(e) null, and his note that CDS JSD was near-zero purely because CDS dominates token mass).
+### 4c. Negative sets — same-context, same-position decoys are *primary*
+
+**The shortcut to avoid (reviewer ZR-92-401):** all three targets live in or beside intergenic/UTR space, and Junho showed the routing channel already encodes the intergenic-vs-CDS distinction (L6 E7, +1.75). So a classifier with *coding* negatives — or negatives that merely differ in length or position — can score high by re-detecting "this is intergenic," learning nothing element-specific. The negative design must remove every such shortcut so the only thing left to discriminate is the regulatory signal itself.
+
+Two tiers of negatives, with the harder tier carrying the headline numbers:
+- **Tier-2 (PRIMARY) — matched-context, matched-position hard decoys.** Each positive is contrasted with a negative drawn from the *same structural class* and the *same position relative to the gene*:
+  - **Promoter** vs non-promoter upstream/intergenic windows at matched TSS-distance.
+  - **RBS (Shine-Dalgarno)** vs **leaderless** gene starts (same position — immediately 5′ of a start codon — but no SD).
+  - **Rho-dependent terminator** vs **intrinsic** terminators *and* non-terminating 3′/downstream windows.
+  Because both classes share context, length, and position, neither the intergenic-ness nor the start-vs-end location is discriminative — only the element is.
+- **Tier-1 (SANITY CHECK ONLY) — generic background.** GC- and length-matched intergenic/genic windows lacking the element. Reported transparently as the *contaminated, easy* setting and never as a primary result, precisely because it is gameable by the structural shortcut.
+
+Confounds explicitly controlled (matched sampling **and** regression covariates): **GC content, element/window length, distance-to-gene-feature, strand, intergenic position, genic vs intergenic context, and BPE-boundary phase.** Null model: **permutation within matched strata** (shuffle labels inside GC/length/position bins) so a "significant" result cannot ride a confound. This extends Junho's discipline (marginal-masked P(e) null; his caution that CDS JSD was near-zero only because CDS dominates token mass).
+
+### 4d. The multi-label "which element" head (structural confound cancels)
+
+Beyond pairwise decoys, we train a single **multi-label / multi-class head** over `{promoter, RBS, Rho-terminator, intrinsic-terminator, plain-intergenic, CDS}`. Forcing the model to say *which* regulatory element (or none) makes the shared intergenic signal **common-mode** across the regulatory classes, so it cancels and cannot drive class separation.
+
+- **Acid test — promoter vs RBS.** Both sit at gene 5′ ends, so they share context *and* position; nothing structural or positional distinguishes them. Routing that cleanly separates promoter from RBS is therefore evidence of genuinely regulatory, element-specific representation — the cleanest possible refutation of the "it only learned intergenic" objection.
+- Multi-label (not just multi-class) because a single window can legitimately carry more than one label (e.g., overlapping promoter and 5′-UTR/RBS context); independent per-label heads avoid forcing false mutual exclusivity.
 
 ---
 
@@ -135,10 +153,10 @@ Following Junho's frozen-weights probing exactly so results are attributable to 
 - Probes: **Logistic Regression** (L2, C=1.0) and **balanced XGBoost** (Junho's two-probe protocol).
 - Cross-validation: **leave-one-genome-out (LOGO)**, plus a stricter **leave-one-phylum-out** for transfer (RQ-C). This prevents the taxonomic leakage Junho flagged (bulk CDS splits by lineage/GC).
 - Tasks:
-  - **(T1) Classification** — element present at locus? (per class, one-vs-negatives + one-vs-hard-decoy).
+  - **(T1) Classification** — element present at locus? Scored **primarily** against the Tier-2 matched-context, matched-position decoys (§4c); the one-vs-generic-background setting is reported only as a labeled sanity check.
   - **(T2) Localization** — predict element position within window; report median bp error and boundary-F1.
-  - **(T3) Sub-typing** — σ class (promoters), leadered vs leaderless (RBS), Rho-dependent vs intrinsic (terminators).
-- Metrics: **MCC, macro-F1, AUPRC** (primary, given class imbalance), boundary-F1, bp localization error. Genome-level **bootstrap CIs** and paired tests across folds.
+  - **(T3) Sub-typing & multi-label** — σ class (promoters), leadered vs leaderless (RBS), Rho-dependent vs intrinsic (terminators), plus the unified multi-label "which element (or none)" head from §4d, with **promoter-vs-RBS** as the structural-confound acid test.
+- Metrics: **MCC, macro-F1, AUPRC** (primary, given class imbalance), boundary-F1, bp localization error. Genome-level **bootstrap CIs** and paired tests across folds. **Headline claims use Tier-2 decoys only;** Tier-1 numbers are shown beside them to expose the gap the shortcut would have inflated.
 
 ---
 
@@ -151,9 +169,10 @@ Three converging, independently sufficient lines of evidence:
 - Then place the MoE `embedding_only` against every dense LGM's embedding to rule out "it's just a better backbone." The MoE claim survives only if **routing_concat > embedding_only AND the surplus features are dense-inaccessible** (true by construction).
 
 ### 8b. Expert-detector discovery + causal ablation (tests P3, the gold standard)
-1. **Discovery:** for each regulatory class, compute per-(layer, expert) log₂ enrichment on element token-spans vs the **marginal-masked null** (Junho's P(e) ≥ 0.01 baseline), with **G-test + BH-FDR**. Rank detectors as Junho did (his Intergenic L6 E7 +1.75 detector is the most promising prior, since promoters/RBS/Rho-rut all live in or near intergenic/UTR space).
-2. **Causality:** mask the candidate expert's logits to −10⁹ on held-out validation tokens; measure cross-entropy increase on **element tokens vs CDS control tokens** → **Difference-in-Differences**. Require DiD ≫ 0 on the target with a near-zero DiD on a same-layer control expert (Junho's L7 E7 tRNA test: DiD +0.559; control L7 E3 DiD −0.065).
-3. **Functional consequence:** re-run the T1/T2 detectors with the expert ablated; require a measurable performance drop. **Dense models have no expert to mask — this entire sub-experiment is impossible for them.**
+1. **Discovery:** for each regulatory class, compute per-(layer, expert) log₂ enrichment on element token-spans vs the **marginal-masked null** (Junho's P(e) ≥ 0.01 baseline), with **G-test + BH-FDR**. Junho's Intergenic L6 E7 (+1.75) is the relevant prior *and the relevant hazard* — promoters/RBS/Rho-rut all sit in intergenic/UTR space, so we must separate an element-specific expert from a generic intergenic expert (see step 2's control).
+2. **Causality (control fixed):** mask the candidate expert's logits to −10⁹ on held-out validation tokens; measure cross-entropy increase as **element tokens vs *matched intergenic non-element* control tokens** (GC/length/position-matched) → **Difference-in-Differences**. The control is deliberately **not CDS**: a CDS control would let the intergenic-vs-CDS expert masquerade as an element detector. Require DiD ≫ 0 on the target with a near-zero DiD on a same-layer control expert (paralleling Junho's L7 E7 tRNA test: DiD +0.559; control L7 E3 DiD −0.065).
+3. **Structural-axis partial-out:** project routing features onto, and remove, the directions that encode Junho's structural classes (intergenic/CDS/tRNA/rRNA). Require the element's enrichment and detector accuracy to **survive** this removal. If they vanish, the signal was the structural shortcut and we report it as such (P7).
+4. **Functional consequence:** re-run the T1/T2/T3 detectors with the expert ablated; require a measurable drop on the **Tier-2 decoy** task specifically. **Dense models have no expert to mask — this entire sub-experiment is impossible for them.**
 
 ### 8c. Upcycled vs Scratch (tests P4 — specialization, not capacity)
 - Repeat 8b for **MoE-Scratch**. Prediction (from Junho's silent-collapse finding: scratch had 14/96 experts at P(e) < 0.01 on OOD genomes, and a causally *null* tRNA detector, DiD +0.006): scratch regulatory experts are weaker or causally null. This isolates *successful specialization* (an upcycling outcome) as the active ingredient — an MoE alone is insufficient, a *specialized* MoE is necessary.
@@ -170,9 +189,10 @@ Three converging, independently sufficient lines of evidence:
 - **Nulls:** label permutation; marginal-masked routing null; GC/length-matched negatives.
 - **Multiple testing:** BH-FDR across all (layer, expert, class, genome) cells, as Junho did.
 - **Uncertainty:** genome-level bootstrap CIs; paired fold-level tests; pre-declared effect-size thresholds.
-- **Confounds:** GC, length, genic/intergenic context, strand, BPE phase as covariates and in matched sampling.
+- **Confounds:** GC, length, distance-to-gene-feature, strand, intergenic position, genic/intergenic context, BPE phase as covariates and in matched sampling; permutation-within-strata null.
+- **Structural-shortcut control (reviewer ZR-92-401):** the intergenic-vs-CDS distinction is a known routing axis (Junho's L6 E7), so it is treated as a confound to defeat, not a result. Headline numbers use Tier-2 same-context/same-position decoys (§4c–4d); the causal control is matched intergenic non-element tokens, not CDS (§8b); and every claimed advantage must survive partialling out the structural axis (P7).
 - **Pre-registered failure criteria:** the falsification rows in §1.
-- **Anti-overclaim commitments (in Junho's spirit — he retracted the "1,266 Pfam families" claim):** we will not report "an expert *for* promoters" without a causal DiD; we will not report cross-genome wins without leave-one-phylum-out; we will report P6 (in-domain promoter routing recovery or collapse) regardless of direction.
+- **Anti-overclaim commitments (in Junho's spirit — he retracted the "1,266 Pfam families" claim):** we will not report "an expert *for* promoters" without a causal DiD against an intergenic (not CDS) control; we will not report a detection win from the Tier-1 background setting; we will not report cross-genome wins without leave-one-phylum-out; we will report P6 (in-domain promoter routing recovery) and P7 (regulatory-not-structural) regardless of direction.
 
 ---
 
@@ -207,4 +227,5 @@ Three converging, independently sufficient lines of evidence:
 | Leave-one-phylum-out transfer | Routing AMI 0.15 (function) vs hidden-state AMI 0.80 (taxonomy) |
 | In-domain promoter recovery hypothesis (P6) | Routing collapsed on **OOD eukaryotic** GUE promoter (routing_only 0.039 vs embedding 0.779) |
 | Intergenic-anchored detector search | Intergenic detector L6 E7 (+1.75) — promoters/RBS/Rho-rut live in/near intergenic space |
+| Structural-shortcut control: intergenic (not CDS) ablation control + partial-out + same-context decoys (§4c–4d, §8b, P7) | The same L6 E7 intergenic detector is *also the confound* — routing already separates intergenic from CDS, so a naive win could be purely structural |
 | GC/phylum stratification + marginal-masked nulls | His 5-genome (GC 33–67%) and 20-genome PGAP panels; P(e) ≥ 0.01 null; G-test BH-FDR |
