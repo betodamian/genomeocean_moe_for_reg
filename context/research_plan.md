@@ -229,3 +229,19 @@ Three converging, independently sufficient lines of evidence:
 | Intergenic-anchored detector search | Intergenic detector L6 E7 (+1.75) — promoters/RBS/Rho-rut live in/near intergenic space |
 | Structural-shortcut control: intergenic (not CDS) ablation control + partial-out + same-context decoys (§4c–4d, §8b, P7) | The same L6 E7 intergenic detector is *also the confound* — routing already separates intergenic from CDS, so a naive win could be purely structural |
 | GC/phylum stratification + marginal-masked nulls | His 5-genome (GC 33–67%) and 20-genome PGAP panels; P(e) ≥ 0.01 null; G-test BH-FDR |
+
+---
+
+## 14. Timeline (5-week execution plan)
+
+Five weeks is aggressive for the full program, so the schedule front-loads the **5 high-confidence core genomes** and the two load-bearing questions (RQ-A detection, RQ-B MoE-necessity); the 20-genome diversity sweep (RQ-C) runs only as far as time allows and is the first thing to defer if a week slips.
+
+| Week | Focus | Concrete deliverables | Plan refs |
+|------|-------|------------------------|-----------|
+| **1** | **Benchmark & setup** | Pre-register hypotheses (P1–P7). Pull the genome panel (5 core first), version-pin ground-truth labels (RegulonDB, Ribo-seq/anti-SD, Peters/Term-seq), build same-context decoys, and generate the deterministic bp↔token mapping. Lock LOGO / leave-one-phylum-out splits to files. | §0, §4, §5 |
+| **2** | **Feature extraction** | Run GenomeOcean-MoE (upcycled + scratch) and dense baselines over all loci; extract embeddings, 96-d routing fingerprints, per-expert bins. De-risk end-to-end on E. coli with one pilot detector. | §6 |
+| **3** | **Detection & baselines (RQ-A)** | Train per-element detectors (T1/T2/T3, LOGO CV); run every named classical tool (BPROM, bTSSfinder, Prodigal SD, RBS Calculator, RhoTermPredict) and dense LGM (NT, DNABERT-2, Evo 2, ProkBERT, GO-dense) on identical held-out loci; produce the head-to-head scoreboard. | §3, §7 |
+| **4** | **MoE-necessity (RQ-B — core)** | Channel ablation (`routing_concat` vs `embedding_only`); expert-detector discovery (enrichment + G-test/BH-FDR); causal ablation (DiD vs intergenic control + structural partial-out); upcycled-vs-scratch; the promoter-vs-RBS acid test. | §4d, §8 |
+| **5** | **Transfer, stats & write-up** | Leave-one-phylum-out transfer (as far as the 20 diverse genomes allow); bootstrap CIs + multiple-testing correction; assemble the annotation deliverable, benchmark, and one-command regeneration suite; write results, figures, slides. Buffer for slippage. | §9, §10, §11, §12 |
+
+**Critical path & risk:** Weeks 1–2 (data + features) gate everything — any slip there cascades, so the pilot E. coli detector at the end of Week 2 is the go/no-go checkpoint. If behind by Week 4, protect the MoE-necessity experiments (the unique contribution) and trim the diversity sweep, not the other way around.
