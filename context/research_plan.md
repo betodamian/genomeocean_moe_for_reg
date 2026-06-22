@@ -150,7 +150,9 @@ For **dense LGMs** (GO-100M/500M/4B, NT, DNABERT-2, Evo 2, ProkBERT, HyenaDNA, C
 ## 7. Detection / annotation models (frozen-backbone, held-out)
 
 Following Junho's frozen-weights probing exactly so results are attributable to the representation, not to fine-tuning:
-- Probes: **Logistic Regression** (L2, C=1.0) and **balanced XGBoost** (Junho's two-probe protocol).
+- Probes (two, with distinct jobs — Junho's two-probe protocol):
+  - **Linear probe — primary.** Logistic Regression (L2, C=1.0). Carries all **MoE-necessity / interpretability** claims (RQ-B): a linear readout makes the clean, non-manufacturable statement "this element is *linearly* decodable from the router," so the model — not a powerful classifier — is doing the work.
+  - **XGBoost (balanced) — secondary, two jobs.** (i) The **fair, expressive readout for the head-to-head vs the tools** (RQ-A), since the classical baselines (RhoTermPredict, the Salis RBS Calculator, the ML promoter tools) are themselves nonlinear — restricting GO-MoE to linear would self-handicap the comparison. (ii) A **nonlinear ceiling check**: if XGBoost succeeds where the linear probe fails, the signal is present but nonlinear (rescuing the result from a false negative); if the two are close, the signal is cleanly linear.
 - Cross-validation: **leave-one-genome-out (LOGO)**, plus a stricter **leave-one-phylum-out** for transfer (RQ-C). This prevents the taxonomic leakage Junho flagged (bulk CDS splits by lineage/GC).
 - Tasks:
   - **(T1) Classification** — element present at locus? Scored **primarily** against the Tier-2 matched-context, matched-position decoys (§4c); the one-vs-generic-background setting is reported only as a labeled sanity check.
@@ -165,7 +167,7 @@ Following Junho's frozen-weights probing exactly so results are attributable to 
 Three converging, independently sufficient lines of evidence:
 
 ### 8a. Incremental-value / channel ablation (tests P1, P2)
-- On the same MoE backbone, compare `routing_concat` vs `embedding_only` vs `routing_only` vs `per_expert_bins`, paired across LOGO folds (Wilcoxon, BH-FDR). Junho's prior: `routing_concat` was *often better and never worse* in-domain; routing collapsed only on OOD eukaryotic tasks. P6 tests which regime bacterial promoters fall into.
+- On the same MoE backbone, compare `routing_concat` vs `embedding_only` vs `routing_only` vs `per_expert_bins`, paired across LOGO folds (Wilcoxon, BH-FDR). **This MoE-necessity comparison uses the linear probe** (§7) — the surplus must be *linearly* readable so the gain is attributable to the representation, not to a classifier finding a boundary. Junho's prior: `routing_concat` was *often better and never worse* in-domain; routing collapsed only on OOD eukaryotic tasks. P6 tests which regime bacterial promoters fall into.
 - Then place the MoE `embedding_only` against every dense LGM's embedding to rule out "it's just a better backbone." The MoE claim survives only if **routing_concat > embedding_only AND the surplus features are dense-inaccessible** (true by construction).
 
 ### 8b. Expert-detector discovery + causal ablation (tests P3, the gold standard)
