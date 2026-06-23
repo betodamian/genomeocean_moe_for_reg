@@ -20,3 +20,6 @@ env/
 
 # JetBrains
 .idea/
+
+# Slide build scaffolding
+slides_build/
