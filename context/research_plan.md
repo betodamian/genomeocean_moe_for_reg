@@ -1,7 +1,7 @@
 # Research Plan: Expert-Routed Annotation of Bacterial Regulatory Elements with GenomeOcean-MoE
 
 **Author:** Beto Damian
-**Status:** Draft v2.1 — overhauled after the Jun 23 2026 project review; data-sufficiency audit added Jun 24 2026 (§5f)
+**Status:** Draft v2.2 — overhauled after the Jun 23 2026 project review; data-sufficiency audit (§5f) and verified database sourcing (§5d) added Jun 24 2026
 **Builds on:** [`junhos_work.md`](junhos_work.md) (Hong, *GenomeOcean: Sparse Upcycling and Expert Specialization in Genomic MoE*, May 2026)
 
 ---
@@ -127,11 +127,26 @@ The dataset is now the centerpiece, because the team's main concern is **proving
 - **Multi-label "which element (or none)" head** over `{promoter, RBS, Rho-term, intrinsic-term, intergenic, CDS}`: independent per-element heads (so co-occurring elements are handled, a window can be promoter *and* RBS), and the structural classes as their own labels so the shared intergenic signal cancels. The **promoter-vs-RBS** discrimination (same context *and* position) is the acid test that a win is regulatory, not structural.
 
 ### 5d. Genome panel and ground truth
-- **High-confidence core (5):** *E. coli* K-12 MG1655, *B. subtilis* 168, *M. tuberculosis* H37Rv, *P. aeruginosa* PAO1, *S. aureus* (experimentally curated labels). **Diverse set (20):** PGAP-annotated genomes spanning 7 phyla + 2 archaea, from NCBI / top reference genomes. Diversity is now a *secondary* axis; the **sequence-similarity holdout is primary**.
+- **High-confidence core (5):** *E. coli* K-12 MG1655, *B. subtilis* 168, *M. tuberculosis* H37Rv, *P. aeruginosa* PAO1, *S. aureus* (experimentally curated labels). **Diverse set (20):** PGAP-annotated genomes spanning 7 phyla + 2 archaea, sequences from NCBI RefSeq. Diversity is now a *secondary* axis; the **sequence-similarity holdout is primary**.
 - Ground-truth sources (experimental, never software-predicted):
-  - **Promoters/TSS:** RegulonDB (strong-evidence only), PRODORIC, DBTBS/SubtiWiki, dRNA-seq TSS catalogs (H. pylori, M. tuberculosis, Synechocystis, Campylobacter, Salmonella, B. subtilis).
-  - **RBS:** ribosome-profiling TIS maps; SD defined −20..−1 of confirmed starts; anti-SD pairing; leaderless transcripts as contrast.
-  - **Rho terminators:** NET-seq + bicyclomycin readthrough (Peters et al. 2012, ~1,000 E. coli sites), Term-seq (Dar et al. 2016, predominantly intrinsic), RhoTermPredict positives; intrinsic terminators as contrast. *Limited almost entirely to E. coli → run as a deep case study with an intra-E. coli unseen split; carry cross-genome claims on promoters and RBS only. Full census and consequences in §5f.*
+
+  **σ-Promoters / TSS — primary source: PPD**
+  - **PPD** (Prokaryotic Promoter Database, Lin group, http://lin-group.cn/database/ppd/): **129,148 manually curated, experimentally verified promoters across 63 prokaryotic species / 74 strains**. This is the primary download for promoter positives; it consolidates dRNA-seq catalogs, RegulonDB, and DBTBS into one flat-file download with per-entry evidence codes and organism IDs. Use PPD as the label source; filter to strong/experimental evidence only.
+  - **RegulonDB v12** (http://regulondb.ccg.unam.mx/, downloadable flat files): 4,050 E. coli K-12 promoters with evidence-level flags — use as a high-fidelity cross-check and source for E. coli σ-factor sub-typing labels not in PPD.
+  - **dRNA-seq TSS catalogs** (SRA/GEO, accessed per-paper): *M. tuberculosis* H37Rv (~4,000+ TSS, Cortes et al. 2013 PMC3898074), *Campylobacter jejuni* (Dugar et al. 2013 PMC3656092, 3 isolates), *Salmonella* Typhimurium (3,583 TSS, Kroger et al. 2013 PMC3963941), *Synechocystis* sp. (TSSNote 2022 PMC9745317), *Bacillus subtilis* BSGatlas, *H. pylori* (Sharma et al. 2010 — the method's origin). Use these to supplement PPD where PPD coverage is sparse and to verify cross-organism leaderless-TSS calls.
+  - **PRODORIC** (https://www.prodoric.de/, 27 organisms): TFBS-centric; use for σ-factor binding site motifs and as a secondary cross-check for organisms in PPD.
+  - *Excluded:* CDBProm (24M predicted promoters, software-generated — not experimental ground truth per §12).
+
+  **RBS / Shine-Dalgarno — no dedicated multi-organism DB; derived from two sources**
+  - **Positive class:** −20..−1 nt upstream of every confirmed annotated start in NCBI PGAP annotation. SD match scored by free-energy pairing to anti-SD (GGAGG complement). This yields ~20k+ candidates per core genome.
+  - **Leaderless negative class (Tier-2):** *M. tuberculosis* has a genome-wide experimentally confirmed leaderless transcriptome (Cortes et al. 2013; ~25% of genes start without a detectable 5′ UTR / SD), providing the cleanest same-position, same-context negatives. For other organisms where ribosome-profiling TIS maps exist (E. coli retapamulin Ribo-seq, B. subtilis), use those. Where not available, fall back to CDS-internal windows as Tier-1 (labeled explicitly as weaker, not counted in headline Tier-2 numbers).
+  - **Ribosome profiling TIS maps** (SRA, per-paper): used to confirm true starts for organisms where annotated CDS starts have high error rates.
+
+  **Rho-dependent terminators — E. coli deep case study only (§5f)**
+  - **Peters et al. 2012** (PNAS 109:15584, NET-seq + bicyclomycin, ~1,000 E. coli Rho terminators): primary positive set; supplementary data downloadable from the journal.
+  - **RhoTermPredict training positives** (Gaviria-Cantin et al. 2019 PMC6407284, E. coli + *B. subtilis* + *Salmonella* — small set): use as additional confirmed Rho sites and for comparison.
+  - **Intrinsic terminators as contrast class:** **TERMITe 2024** (Nucleic Acids Research, PMC12207403, GitHub + Zenodo): experimentally confirmed intrinsic terminator atlas across **13 bacterial species** (E. coli 691–957 sites, *B. subtilis* 635–1,214, *L. monocytogenes* 862, *E. faecalis* 796, 6 *Streptomyces* spp., *Z. mobilis*), identified from Term-seq data. Use TERMITe's E. coli intrinsic terminator set as the Tier-2 "same-context, same-position" negative for Rho terminators.
+  - *Note:* TERMITe covers intrinsic terminators only across 13 organisms; Rho-dependent terminator experimental data remains essentially limited to E. coli (Peters 2012). Cross-organism intrinsic terminator comparisons (TERMITe) are feasible but are a secondary analysis, not the Rho case study.
 
 ### 5e. Pretraining-leakage caveat (motivates §10)
 GO-MoE was pretrained on ~645 Gbp of metagenomic data, so a validation genome can overlap the **backbone's** pretraining even when it is sequence-dissimilar to the **probe's** training set. The sequence-similarity holdout controls leakage at the probe level; fully closing the question at the backbone level requires the optional retraining branch (§10).
@@ -144,7 +159,7 @@ GO-MoE was pretrained on ~645 Gbp of metagenomic data, so a validation genome ca
 
 | Element | Experimental ground-truth source(s) | Volume | Organism / phylum breadth | Cross-genome unseen split (P5, P8) feasible? |
 |---|---|---|---|---|
-| **σ-promoters / TSS** | RegulonDB v12 (E. coli: **4,050** promoters, 3,705 TUs), PRODORIC (27 organisms, TFBS-centric), dRNA-seq TSS catalogs (H. pylori, M. tuberculosis, Synechocystis, Campylobacter, Salmonella, B. subtilis) | ~4k strong E. coli + thousands across ~6 further organisms / ≥4 phyla | **Yes** — multi-phylum; supports leave-one-phylum-out and the ≤60% cross-genome unseen split |
+| **σ-promoters / TSS** | **PPD** (primary): **129,148** experimentally verified promoters across **63 species / 74 strains**; RegulonDB v12 (E. coli 4,050, cross-check + σ sub-typing); dRNA-seq catalogs (MTB ~4k+, Campylobacter, Salmonella 3.5k, Synechocystis, B. subtilis, H. pylori — supplement PPD) | **129k+ across ≥63 species / ≥7 phyla** | **Yes** — robust multi-phylum coverage; supports leave-one-phylum-out and ≤60% cross-genome unseen split |
 | **Shine-Dalgarno RBS** | Derived from confirmed CDS starts (−20..−1); ribosome-profiling TIS maps for confirmed starts + the leaderless-negative | Positives: **every** annotated start (~20k across the 5 core genomes); clean confirmed/leaderless labels: a handful of organisms | **Positives yes (every genome); the clean leaderless-negative is the limiter** — confident leaderless calls need ribosome/TSS data (E. coli, B. subtilis, M. tuberculosis, a few more) |
 | **Rho-dependent terminators** | Peters 2012 NET-seq+BCM (E. coli, ~1,000), Peters 2009 (~200), Term-seq / Dar 2016 (predominantly *intrinsic*) | ~1k, **almost entirely E. coli** | **No** — effectively a single-genome class; only an **intra-E. coli ≤60%-identity** split is valid |
 
