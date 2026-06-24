@@ -38,10 +38,28 @@ research plan — no software-predicted labels):
 
 SD-class definitions:
 - **SD**: 5′ UTR present; GGAGG-like motif detectable at −20..−1 (canonical or extended);
-  ΔG pairing to anti-SD ≤ −3.4 kcal/mol (Salis RBS Calculator threshold, used for
-  classification only, not as the evidence source).
+  ΔG pairing to anti-SD below the organism-specific threshold (see below).
 - **UNSD (leadered non-SD)**: 5′ UTR present (≥1 nt); no detectable SD motif.
 - **Leaderless**: TSS coincides with start codon (0–2 nt 5′ UTR); no SD possible.
+
+### Organism-specific SD labeling (required — do NOT use one global rule)
+
+A single E. coli-tuned anti-SD sequence + ΔG threshold mislabels divergent SD systems.
+S. aureus uses *extended* start-codon-proximal SD interactions and its native start sites
+are not correctly decoded by E. coli ribosomes (Kohl et al. 2026). Assign SD class using
+the **organism's own 16S rRNA 3′-tail (anti-SD)** and an organism-specific threshold:
+
+| Organism | 16S 3′ anti-SD (5'→3' shown as complement target) | SD core | ΔG threshold | Notes |
+|---|---|---|---|---|
+| E. coli K-12 | 3'-AUUCCUCCA-5' | GGAGG | ≤ −3.4 kcal/mol | Salis RBS Calculator v2.1 default |
+| B. subtilis 168 | 3'-UCUUUCCUCCA-5' (longer tail) | GGAGG / AAAGGAGG | ≤ −4.0 kcal/mol | Stronger/longer anti-SD; ~78% SD usage |
+| S. aureus NCTC 8325 | 3'-UCUUUCCUCCACU-5' (extended) | extended AAGGAGG | ≤ −4.5 kcal/mol | Extended SD (Kohl 2026); scan −25..−1, not just −20..−1 |
+| M. tuberculosis H37Rv | 3'-AUUCCUCCA-5' | GGAGG (weak) | ≤ −3.0 kcal/mol | Leaderless-rich; many genes have no SD at all |
+| P. aeruginosa PAO1 | 3'-AUUCCUCCA-5' | GGAGG | ≤ −3.4 kcal/mol | T2 only — no Ribo-seq to calibrate |
+
+The exact anti-SD sequence and ΔG threshold used for each entry MUST be recorded in the
+per-entry `notes` column so labels are auditable and reproducible. Where no organism-specific
+calibration is available, fall back to the E. coli default and flag it in `notes`.
 
 ---
 
@@ -163,10 +181,12 @@ No dedicated genome-wide TIS profiling study found as of Jun 2026. Strategy:
    call the same start (same locus_tag + start_coord), keep the highest-tier evidence
    and record the other studies in `notes`.
 
-2. **SD classification uses the sd_window_seq + ΔG rule, not predicted labels.**
-   Compute ΔG using the Salis RBS Calculator v2.1 Python library (offline, no API call).
-   Threshold: ΔG ≤ −3.4 kcal/mol → SD; ΔG > −3.4 and 5′ UTR ≥ 1 nt → UNSD;
-   5′ UTR = 0 nt → leaderless.
+2. **SD classification uses the sd_window_seq + ΔG rule with ORGANISM-SPECIFIC anti-SD
+   and thresholds, not predicted labels and not one global cutoff.**
+   Compute ΔG using the Salis RBS Calculator v2.1 Python library (offline, no API call)
+   against the organism's 16S 3′ anti-SD (table above). Per-organism threshold → SD;
+   above threshold with 5′ UTR ≥ 1 nt → UNSD; 5′ UTR = 0 nt + TSS evidence → leaderless.
+   Record the anti-SD sequence and threshold used in `notes`.
 
 3. **Leaderless calls require TSS evidence.** Do not call leaderless from start coordinates
    alone — require a dRNA-seq or TIS-profiling dataset confirming the TSS overlaps the
@@ -221,5 +241,60 @@ No dedicated genome-wide TIS profiling study found as of Jun 2026. Strategy:
 | P. aeruginosa | ~5,570 (T2) | 0 (T2 only) | ~3,900 (estimated) | ~1,670 |
 | **Total** | **~18,000–20,000** | **~1,800** | **~11,000** | **~4,200** |
 
-The leaderless class (~1,800 entries, dominated by MTB) is the primary Tier-2 negative
-for the RBS classifier. SD entries (~11,000) are the positives.
+SD entries (~11,000) are the positives. The **UNSD-leadered** class (~2,500–3,500,
+present in every Ribo-seq organism) is the **PRIMARY** negative — see the robustness
+audit below. The leaderless class (~1,800, MTB-dominated) is a **secondary** negative only.
+
+---
+
+## Robustness audit (2026-06-24) — read before using this database
+
+Three issues were found when validating this selection against the research methodology's
+anti-confound commitments (plan §5c, §12, P7). All three are mitigated by the design rules
+above; this section records *why* those rules exist.
+
+### 1. CRITICAL — leaderless negatives are GC/taxonomy-confounded → use UNSD instead
+
+Experimentally-confirmed **leaderless** starts concentrate in GC-rich *M. tuberculosis*
+(65.5% GC; ~1,540 of ~1,800 leaderless entries), while **SD** positives concentrate in
+lower-GC genomes (E. coli 51%, B. subtilis 43.5%, S. aureus 33%). A cross-organism
+"SD vs leaderless" classifier can therefore win on **GC / k-mer composition alone**
+(15–32-point GC gap) — exactly the structural-shortcut the methodology is built to defeat
+(P7). The GC-matched baseline (§12) does not rescue it: you cannot GC-match a 65.5% MTB
+window to a 33% S. aureus window, so matching discards nearly all cross-organism pairs.
+
+**Mitigation:** the PRIMARY RBS negative is **SD vs UNSD-leadered within the same organism**.
+Both are leadered, ribosome-bound, same position, same GC — they differ only in the SD motif,
+so a win is attributable to SD detection, not GC. UNSD exists in every Ribo-seq organism,
+making this decoy GC-clean and cross-genome-capable. Leaderless is demoted to a secondary
+(within-MTB) decoy.
+
+### 2. CRITICAL — single E. coli SD rule mislabels divergent organisms
+
+See "Organism-specific SD labeling" above. S. aureus extended-SD and MTB's weak/absent SD
+require organism-specific anti-SD sequences and ΔG thresholds, or the labels themselves
+(not just the model) become organism-dependent and undermine the cross-genome test.
+
+### 3. HIGH — 6–8 bp SD motif in a 300 bp / 60-token window dilutes the signal
+
+The SD core is 1–2 tokens out of ~60 in the standard window. A **pooled** routing fingerprint
+can wash it out, making RBS the element most likely to fail the Phase-0 smoke test (P0).
+
+**Mitigation:** RBS pre-registers a window-size sweep (300 / 120 / 60 bp) and a pooling sweep
+(mean-pool vs per-position vs per-expert-bin), and leads with per-position / per-expert-bin
+routing views. If RBS fails Phase-0, enter the §4 failure-mode tree (mode 2) for RBS only.
+
+### Scope note — RBS experimental data spans 3 phyla
+
+Gammaproteobacteria (E. coli), Actinobacteria (M. tuberculosis), Firmicutes (B. subtilis,
+S. aureus). *P. aeruginosa* (also Gammaproteobacteria) contributes **no experimental** RBS
+truth (PGAP-derived T2 only). Leave-one-phylum-out (P5) for RBS = 3 phyla. S. aureus is the
+strongest cross-genome generalization test (genuinely divergent SD sequence, not just flanks).
+
+### Minor — dataset condition heterogeneity
+
+Sources span different growth conditions (MTB exponential + starvation; B. subtilis
+sporulation; E. coli glucose-limited). SD *class* is a sequence property and is
+condition-independent, so pool across conditions for labeling — but do NOT use expression
+level / ribosome occupancy as a model feature (it is condition-dependent and not a property
+of the RBS sequence).
