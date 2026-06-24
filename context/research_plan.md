@@ -1,7 +1,7 @@
 # Research Plan: Expert-Routed Annotation of Bacterial Regulatory Elements with GenomeOcean-MoE
 
 **Author:** Beto Damian
-**Status:** Draft v2.4 — overhauled after the Jun 23 2026 project review; data-sufficiency audit (§5f), verified database sourcing (§5d), curated RBS database (`data/rbs_database/`), and RBS robustness audit (UNSD-primary negative, organism-specific SD labeling, window/pooling risk) added Jun 24 2026
+**Status:** Draft v2.5 — overhauled after the Jun 23 2026 project review; data-sufficiency audit (§5f), verified database sourcing (§5d), curated RBS database (`data/rbs_database/`), RBS robustness audit, and comparison-integrity / anti-circularity safeguards (§12) added Jun 24 2026
 **Builds on:** [`junhos_work.md`](junhos_work.md) (Hong, *GenomeOcean: Sparse Upcycling and Expert Specialization in Genomic MoE*, May 2026)
 
 ---
@@ -153,6 +153,8 @@ The dataset is now the centerpiece, because the team's main concern is **proving
 
   **Primary decoy = SD vs UNSD-leadered, within organism** (§5c): both classes are leadered, ribosome-bound, same position, same GC — they differ only in the SD motif, so a win is attributable to SD detection, not GC/taxonomy. UNSD exists in every Ribo-seq organism (E. coli ~46% of starts, MTB 678, B. subtilis ~16%, S. aureus low), so this decoy is **GC-clean and cross-genome-capable**. Leaderless is the secondary decoy only (GC-confounded, §5c).
 
+  **For the head-to-head vs classical tools/gLMs**, the SD-vs-UNSD split (ΔG-defined) is *not* the headline task — it would be circular against the ΔG-based RBS baselines (Salis, Free2Bind). The headline RBS comparison is **experimentally-grounded start detection/localization** (Ribo-seq-confirmed TIS vs same-context non-start); SD-vs-UNSD is reported separately and drives the MoE-internal routing analysis (§9). See §12 anti-circularity.
+
   **Organism-specific SD labeling (required).** A single E. coli-tuned rule mislabels divergent SD systems — *S. aureus* uses **extended** start-codon-proximal SD motifs and its native starts are not decoded by *E. coli* ribosomes (Kohl et al. 2026). SD class is therefore assigned with **organism-specific anti-SD sequences** (the 16S rRNA 3′ tail of each genome) and **organism-specific ΔG thresholds**, not one global cutoff. Default ΔG ≤ −3.4 kcal/mol (E. coli/Salis) is used only where no organism-specific calibration exists, and the anti-SD sequence + threshold used per entry is recorded in the database `notes`.
 
   **RBS is the highest Phase-0 risk element (window/motif-size mismatch).** The SD core is 6–8 bp ≈ 1–2 tokens inside a 300 bp ≈ 60-token window (§6), so the **pooled** `routing_concat` can dilute the SD signal below detectability. RBS therefore pre-registers a **window-size + pooling sensitivity sweep** (e.g. 300/120/60 bp; mean-pool vs per-position vs per-expert-bin) and leads with the **per-position / per-expert-bin** routing views rather than the pooled fingerprint. If RBS fails Phase-0 P0, the §4 failure-mode tree (mode 2: element not recovered → change windowing/feature views) is entered for RBS specifically.
@@ -253,6 +255,10 @@ The frozen path (§7) is primary. This branch is a **stretch / collaborative** c
 - **Structural shortcut treated as a confound to defeat**, not a result (Tier-2 decoys, intergenic-not-CDS control, partial-out).
 - **Pre-registered failure criteria** = the P0–P9 falsification rows.
 - **Anti-overclaim:** no "expert *for* promoters" without a causal DiD against an intergenic control; no detection win reported from the Tier-1 setting; no generalization claim without the unseen (Regime B) split; P6/P7/P8 reported regardless of direction.
+- **Comparison integrity / anti-circularity (added Jun 24 2026 — protects the head-to-head that is the project's main goal).** A baseline may never be benchmarked against labels it helped define:
+  - **(a) RBS vs energy-based tools.** The SD-vs-UNSD split is defined by a ΔG rule (§5d), and two named RBS baselines — **Salis RBS Calculator v2.1** and **Free2Bind** — *are* ΔG / anti-SD-pairing models, so scoring them against ΔG-defined labels is circular. The **headline RBS head-to-head is therefore experimentally-grounded translation-start detection / localization** (predict the ribosome-profiling-confirmed TIS vs same-context non-translated start windows), which is ΔG-free and on which all tools (Prodigal start-calling, Salis, GO-MoE, dense gLMs) compete equally. The ΔG-defined **SD-vs-UNSD subtyping is reported separately**, with energy-based baselines marked as partially circular (agreement sanity-check, not a benchmark win). The ΔG split stays valid for the MoE-internal routing analysis (§9), where no external ΔG baseline is involved.
+  - **(b) Promoters vs promoter-prediction tools.** PPD aggregates from many upstream sources; any entry traceable to a tool under benchmark (BPROM, bTSSfinder, iPromoter-2L/MULTiPly, G4PromFinder) is excluded. Only experimental-evidence entries are kept (dRNA-seq / TSS-mapping, RegulonDB strong-evidence) — so promoter tools are scored against experimental truth, never against predictions they (or their training lineage) produced.
+  - **(c) Identical loci / identical protocol.** All dense gLMs and classical tools are evaluated on the **same held-out windows** under the §7 frozen-probing protocol (gLMs) or at default + tuned thresholds (classical), so any GO-MoE margin is attributable to the model, not to an easier evaluation set.
 
 ---
 
