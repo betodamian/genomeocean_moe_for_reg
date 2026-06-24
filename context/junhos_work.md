@@ -118,6 +118,18 @@ Using leave-one-genome-out cross-validation across 5 folds and 4.4M tokens via L
 *   **Specific tRNA Target F1:** Reached 0.774 with a Precision of 0.745 and a Recall of 0.806.
 *   **Layer informativeness:** L11 (0.382), L6 (0.309), L7 (0.284), L3 (0.276).
 
+### Follow-up control (Jun 2026, Zhong Wang): Ruling out trivial-specialization confounders
+
+A mentor-directed follow-up (AI-agent analysis) tested whether the observed "expert specialization" is genuinely *biological* or a trivial artifact, by pitting three hypotheses against each other:
+
+*   **H₀ — Load-balancing dominates.** Routing is essentially independent of content; the auxiliary load-balancing loss has flattened the distribution so much that P(expert | token, context) ≈ P(expert) (uniform-ish). The router carries no information. *(Junho's random prior.)*
+*   **H₁ — Token-identity / composition only ("trivial specialization trap").** Routing is a deterministic-ish hash of the token ID (or its surface composition: GC, k-mer content). P(expert | token, context) ≈ P(expert | token) — context adds nothing.
+*   **H₂ — Biological semantics.** Routing is context-conditional: the same token ID routes to different experts depending on the surrounding sequence's functional role. P(expert | token, context) ≠ P(expert | token). The router has learned something about *function*, not just *string*.
+
+**Test and result.** For the **1,248 BPE token IDs that appear in ≥2 functional classes** (354K total samples across the 5 reference genomes), the agent estimated the context-conditional mutual information **I(expert ; class | token_id)** — i.e. class information in routing that *cannot* be attributed to token identity. At the most informative layer (**L7**), routing carries **0.243 bits of class information not attributable to token identity** — **96% of the total expert–class mutual information at that layer**, and **42× the within-token label-shuffle null**.
+
+**Conclusion.** This supports **H₂** and rules out H₀ and H₁: the routing circuit has learned a **function-aware representation that is independent of surface composition** (the same token routes differently by functional context). This is the control that elevates "experts specialize" from the trivial-specialization trap to a genuine biological-semantics claim — and it is the disambiguation the downstream regulatory-annotation work must replicate for its own classes (see research_plan §9d / P10).
+
 ---
 
 ## 5. Findings: Functional Clustering of Routing Features

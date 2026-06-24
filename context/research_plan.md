@@ -1,7 +1,7 @@
 # Research Plan: Expert-Routed Annotation of Bacterial Regulatory Elements with GenomeOcean-MoE
 
 **Author:** Beto Damian
-**Status:** Draft v2.6 — overhauled after the Jun 23 2026 project review; Jun 24 2026 additions: data-sufficiency audit (§5f), verified database sourcing (§5d), curated RBS database (`data/rbs_database/`), RBS robustness audit, comparison-integrity / anti-circularity safeguards (§12), and **element-strengthening pass** — RBS extended to 4 bacterial phyla + an archaeal domain-transfer axis (Caulobacter, Haloferax); **Rho lifted from E. coli-only to a 2-phylum in vivo cross-genome panel** (M. tuberculosis RhoDUC + E. coli Term-seq concordance), catalogued in `data/rho_database/`
+**Status:** Draft v2.7 — overhauled after the Jun 23 2026 project review; Jun 24 2026 additions: data-sufficiency audit (§5f), verified database sourcing (§5d), curated RBS database (`data/rbs_database/`), RBS robustness audit, comparison-integrity / anti-circularity safeguards (§12), **element-strengthening pass** (RBS → 4 phyla + archaea; Rho → 2-phylum in vivo panel, `data/rho_database/`), and **trivial-specialization-trap control** (§9d / P10, Zhong Wang) — context-conditional MI given token-identity to separate function-aware routing (H₂) from motif-token hashing (H₁)
 **Builds on:** [`junhos_work.md`](junhos_work.md) (Hong, *GenomeOcean: Sparse Upcycling and Expert Specialization in Genomic MoE*, May 2026)
 
 ---
@@ -45,8 +45,9 @@ Sub-questions:
 | P7 | **Regulatory, not structural.** Routing discriminates each element from its same-context, same-position decoy, and the advantage survives partialling out the structural-class routing axis | Discrimination collapses once structural class/position is held fixed — the model only re-detected "intergenic vs coding" |
 | **P8 (Nic K)** | **Generalization, not memorization.** On the **sequence-dissimilar (≤60% identity) unseen split** — *cross-genome* for all three elements (promoters ≥7 phyla, RBS 4 phyla + archaea, **Rho 2-phylum E. coli↔MTB**) plus intra-genome dissimilar splits (§5f) — the routing-aware detector stays above the GC-matched baseline | Performance collapses toward chance on dissimilar elements → the model was riding sequence similarity to training |
 | **P9 (retraining branch, §10)** | The **bug-corrected** retrained model reproduces the expert-specialization and detection results, **and** a model pretrained with the validation set **excluded** preserves the unseen-split performance | Conclusions flip under the corrected model, or unseen-split performance depends on the validation data having been in pretraining (i.e., leakage) |
+| **P10 (Zhong Wang — trivial-specialization trap)** | **Routing is context-conditional for regulatory classes, not token-ID hashing.** For motif/element tokens appearing in ≥2 functional contexts, routing carries class information *conditional on token identity*: **I(expert ; element_class \| token_id) > 0** above a **within-token label-shuffle null**, at the informative layers — i.e. the same BPE token (TATAAT, TTGACA, GGAGG, C-rich *rut*) routes differently when functional vs decoy | Conditional MI ≈ null (CI overlaps the within-token shuffle) → routing only re-encodes motif/token presence (H₁ "trivial specialization"); the "function-aware expert" claim collapses to motif-token detection and **RQ-B is not supported** (RQ-A detection still valid) |
 
-P0, P8, and P9 are the v2 additions: a go/no-go signal check, an explicit not-memorizing test, and a leakage/robustness control. We report all predictions regardless of direction.
+P0, P8, and P9 are the v2 additions: a go/no-go signal check, an explicit not-memorizing test, and a leakage/robustness control. **P10 (v2.7, Zhong Wang)** imports the H₀/H₁/H₂ disambiguation that validated Junho's structural-expert specialization (junhos_work.md §4 follow-up) and applies it to the regulatory classes. We report all predictions regardless of direction.
 
 ---
 
@@ -56,7 +57,7 @@ P0, P8, and P9 are the v2 additions: a go/no-go signal check, an explicit not-me
 
 1. **Architectural exclusivity (by construction).** The primary detector's feature vector is the routing fingerprint — per-token router softmax over 12 layers × 8 experts (96-d, pooled) plus per-position expert assignments — optionally concatenated with the residual stream. A dense model **emits no routing distribution**; these features do not exist for it. Dense models can only be evaluated on the embedding-only sub-detector (the P1 control). If `routing_concat` beats `embedding_only`, the surplus is information a dense model cannot supply.
 
-2. **Causal exclusivity (by ablation).** We extend Junho's expert-masking protocol (mask logits to −10⁹, measure cross-entropy shift, compute DiD vs a control expert) to the regulatory classes. A dense network has no expert to mask, and per P4 a *non-specialized* MoE (scratch) is predicted to fail the same test — so it is *specialized* experts, not mere MoE capacity, that carry the result.
+2. **Causal exclusivity (by ablation).** We extend Junho's expert-masking protocol (mask logits to −10⁹, measure cross-entropy shift, compute DiD vs a control expert) to the regulatory classes. A dense network has no expert to mask, and per P4 a *non-specialized* MoE (scratch) is predicted to fail the same test — so it is *specialized* experts, not mere MoE capacity, that carry the result. **Necessary precondition (P10, §9d):** the specialization must be **context-conditional**, not token-ID hashing — for short-motif elements (TATAAT, GGAGG, *rut*) this is the load-bearing control, since otherwise "function-aware expert" reduces to "the motif-token expert." Junho's work passed exactly this test (I(expert ; class | token_id) = 0.243 bits at L7, 42× the within-token null; junhos_work.md §4 follow-up); the regulatory work must reproduce it.
 
 *Reviewer caveat (Zhong Wang, Rob Egan):* turning off **any** part of a network degrades performance, so the ablation claim is stated as a **differential** (DiD: element vs matched control), never as absolute degradation. A bare "switching the expert off breaks function" is not claimed; only "it breaks the *element's* function significantly more than a matched control's" (§8b).
 
@@ -241,6 +242,14 @@ Per the team decision, the annotation methodology uses **frozen** GO-MoE; no ret
 
 **9c. Upcycled vs scratch (P4).** Repeat 9b for MoE-Scratch; predict its regulatory experts are weaker/causally null (Junho: scratch silent collapse, null tRNA DiD +0.006) — isolating *successful specialization*, not MoE capacity, as the active ingredient.
 
+**9d. Token-identity disambiguation — the trivial-specialization trap (P10, Zhong Wang).** The single most dangerous confound for the *biological-semantics* claim, and one the §12 GC-baseline and §9b structural partial-out do **not** catch. Because promoters/RBS/Rho are defined by **short conserved motifs that map to specific BPE tokens** (−10 TATAAT, −35 TTGACA, SD GGAGG, C-rich *rut*), "routing detects the element" can be 100% "routing detects the motif token" — the same trap Junho's work had to rule out for its structural experts (junhos_work.md §4 follow-up). We replicate that exact disambiguation against three hypotheses: **H₀** routing is load-balanced noise (≈ uniform), **H₁** routing is token-ID / surface-composition hashing (context adds nothing), **H₂** routing is context-conditional (function-aware). Procedure:
+
+- Identify **element-defining tokens that also occur in non-element contexts** (e.g. GGAGG inside a CDS, TATAAT in a non-promoter window) — the analog of Junho's 1,248 multi-class token IDs.
+- Estimate the **context-conditional mutual information I(expert ; element_class | token_id)** per layer, with a **within-token label-shuffle null** (shuffle class labels among instances of the *same* token ID). H₂ requires conditional MI significantly above the within-token null at the informative layers; H₁ predicts conditional MI ≈ null; H₀ predicts near-zero unconditional MI too (check P(expert | class) is non-uniform beyond the marginal-masked null of §9b).
+- **Token-controlled DiD:** in the §9b ablation, the matched control must **hold token-identity fixed** (compare element-context vs non-element-context instances of the *same* token), so a positive DiD reflects context-conditional routing, not removal of a token's only router path.
+
+**Scope (important, not a blanket disqualifier).** Token-ID/motif detection is **legitimate for RQ-A** (the detection/annotation head-to-head — BPROM also keys on the motif; a routing detector that finds TATAAT is a fair, useful detector). The trap bites **only RQ-B**: the claims in §2 that experts encode regulatory *function*. So 9d gates the biological-semantics / MoE-necessity narrative, **not** the detection comparison. If 9d fails (H₁), we report the regulatory experts honestly as motif-token detectors and retain the RQ-A detection results.
+
 ---
 
 ## 10. Optional retraining branch (validation purposes only — secondary)
@@ -266,7 +275,7 @@ The frozen path (§7) is primary. This branch is a **stretch / collaborative** c
 
 - **Chance baseline = GC-content-matched profiles** (Zhong Wang / Rob Egan), not naive shuffling — "better than random" must mean better than GC-matched random.
 - **Nulls:** label permutation; marginal-masked routing null; permutation-within-matched-strata (GC/length/position/BPE-phase).
-- **Confounds controlled:** GC, length, distance-to-feature, strand, intergenic position, genic/intergenic context, BPE phase — as covariates and in matched sampling.
+- **Confounds controlled:** GC, length, distance-to-feature, strand, intergenic position, genic/intergenic context, BPE phase, **and token-identity / surface k-mer composition** (the H₁ "trivial-specialization" confound, §9d) — as covariates and in matched sampling; token-identity is additionally controlled by the *conditional*-MI test and the token-fixed DiD (§9d), since matched sampling alone cannot remove a confound that *is* the element's defining motif.
 - **Multiple testing:** BH-FDR across all (layer, expert, class, genome) cells.
 - **Class imbalance:** AUPRC/MCC primary; balanced probes; per-class reporting (rare Rho-terminators and σ-subtypes never hidden in an aggregate).
 - **Ablation stated as a differential** (DiD vs matched control), never absolute degradation (§2 caveat).
