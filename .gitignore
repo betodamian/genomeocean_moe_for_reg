@@ -23,3 +23,18 @@ env/
 
 # Slide build scaffolding
 slides_build/
+
+# Pulled data — fetched via committed scripts (data/download/*.sh), pinned by
+# data/download/checksums.txt (research_plan.md §14). Kept locally in the project,
+# not committed, to keep the repo lean and reproducible. Regenerate with the scripts.
+data/genomes/
+data/promoters/PPD/
+data/promoters/PPD_csv.zip
+data/**/raw/
+data/download/_tmp/
+*.zip
+*.tar.gz
+*.bam
+*.sra
+*.bw
+*.bigwig

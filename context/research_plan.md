@@ -1,7 +1,7 @@
 # Research Plan: Expert-Routed Annotation of Bacterial Regulatory Elements with GenomeOcean-MoE
 
 **Author:** Beto Damian
-**Status:** Draft v2.7 — overhauled after the Jun 23 2026 project review; Jun 24 2026 additions: data-sufficiency audit (§5f), verified database sourcing (§5d), curated RBS database (`data/rbs_database/`), RBS robustness audit, comparison-integrity / anti-circularity safeguards (§12), **element-strengthening pass** (RBS → 4 phyla + archaea; Rho → 2-phylum in vivo panel, `data/rho_database/`), and **trivial-specialization-trap control** (§9d / P10, Zhong Wang) — context-conditional MI given token-identity to separate function-aware routing (H₂) from motif-token hashing (H₁)
+**Status:** Draft v2.8 — overhauled after the Jun 23 2026 project review; Jun 24 2026 additions: data-sufficiency audit (§5f), verified database sourcing (§5d), curated RBS database (`data/rbs_database/`), RBS robustness audit, comparison-integrity / anti-circularity safeguards (§12), element-strengthening pass (RBS → 4 phyla + archaea; Rho → 2-phylum in vivo panel, `data/rho_database/`), trivial-specialization-trap control (§9d / P10, Zhong Wang), and **data acquisition started** (§5g) — 7 genomes + PPD (129,149 promoters) + Rho/RBS signal pulled & checksummed; reproducible fetch scripts in `data/download/`, full log in `data/MANIFEST.md`
 **Builds on:** [`junhos_work.md`](junhos_work.md) (Hong, *GenomeOcean: Sparse Upcycling and Expert Specialization in Genomic MoE*, May 2026)
 
 ---
@@ -209,6 +209,21 @@ GO-MoE was pretrained on ~645 Gbp of metagenomic data, so a validation genome ca
 
 **Week-1 data-census gate (new — precedes the Phase-0 gate).** Before clustering, count — per element and per regime — the number of **independent ≤60%-identity clusters** that survive MMseqs2/CD-HIT deduplication. Pre-register a minimum (target: ≥30 held-out clusters spanning ≥2 phyla for a *cross-genome* unseen claim; ≥30 clusters for an *intra-genome* claim). Any element/regime below threshold is formally demoted to "case study, no generalization claim" **before** Phase 0, so a headline generalization number is never reported on a class that lacks the data to support it. This makes the §5e leakage argument and P8 contingent on a counted, committed census rather than an assumption.
 
+### 5g. Data acquisition status & provenance (Jun 24 2026 — full log in [`data/MANIFEST.md`](../data/MANIFEST.md))
+
+Acquisition is reproducible per §14: fetch scripts in `data/download/` + SHA256 in `data/download/checksums.txt`; bulk data is kept local (gitignored), scripts/checksums/manifest committed. Every source below is cited; nothing is sourced outside this plan.
+
+**Pulled and checksummed (local):**
+- **Genomes (7):** NCBI Datasets API v2 — RefSeq `GCF_000005845.2` (E. coli), `GCF_000009045.1` (B. subtilis), `GCF_000195955.2` (M. tuberculosis), `GCF_000006765.1` (P. aeruginosa), `GCF_000013425.1` (S. aureus), `GCF_000022005.1` (C. crescentus), `GCF_000025685.1` (H. volcanii) — FASTA + GFF. Script: `download_genomes.sh`.
+- **Promoters:** **PPD** (Liu et al. 2021, *J Mol Biol* 433:166860; http://lin-group.cn/database/ppd/) — **129,149 experimental promoters across 29 species** with TSS coordinate, strand, 81-bp sequence. Script: `download_promoters.sh`.
+- **Rho signal:** E. coli Term-seq 3′-ends (NAR 2018 46:6797, **GSE109766**) per-position counts. **RBS signal:** E. coli ΔaSD ribosome-profiling wig (Saito 2020, **GSE135906**). Script: `download_labels.sh`.
+
+**Available, needs Week-1 TIS/peak-calling pipeline (signal pulled or accessioned):** E. coli Ribo-RET (GSE122129) & TetRP (PRJDB2960); B. subtilis Ribo-seq (GSE95211, GSE249450); C. crescentus (GSE54883); M. tuberculosis dRNA-seq (SRP028740); M. tuberculosis Rho raw BAMs (E-MTAB-11753, 200–350 MB each — *not* bulk-pulled by design).
+
+**Manual fetch (SPA / journal SI; URLs + DOIs in `data/MANIFEST.md` and the per-element `sources.tsv`):** RegulonDB v12 σ-subtyping; per-gene SD/UNSD/leaderless tables (Meydan, Zhu 2021, Kohl 2026, Gelsinger 2020); Peters 2012 Rho sites; Botella 2022 Rho site table; B. subtilis H-SELEX; TERMITe intrinsic atlas (Zenodo).
+
+The split between "pulled" and "pipeline/manual" reflects reality: NCBI genomes and the curated promoter database download directly, whereas RBS/Rho *labels* are processed outputs of ribosome-/Term-seq experiments whose final coordinate tables live in journal supplements — exactly the Week-1 processing the timeline (§16) allots.
+
 ---
 
 ## 6. Coordinate → token mapping (deterministic, released)
@@ -300,7 +315,7 @@ The frozen path (§7) is primary. This branch is a **stretch / collaborative** c
 
 ## 14. Reproducibility checklist
 
-- [ ] Datasets pinned by version/accession; download + checksum scripts committed.
+- [x] Datasets pinned by version/accession; download + checksum scripts committed. *(Jun 24 2026: `data/download/{download_genomes,download_promoters,download_labels}.sh` + `checksums.txt`; genomes + PPD promoters + Rho/RBS signal pulled; status in [`data/MANIFEST.md`](../data/MANIFEST.md). RBS/Rho coordinate labels pending Week-1 pipeline.)*
 - [ ] **80/20 sequence-similarity split committed as files** (MMseqs2/CD-HIT params + cluster assignments); LOGO / leave-one-phylum-out splits committed.
 - [ ] Deterministic bp↔token mapping tables released per genome.
 - [ ] Frozen-backbone feature extraction with fixed seeds + committed configs.
