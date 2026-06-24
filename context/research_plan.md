@@ -1,7 +1,7 @@
 # Research Plan: Expert-Routed Annotation of Bacterial Regulatory Elements with GenomeOcean-MoE
 
 **Author:** Beto Damian
-**Status:** Draft v2 — overhauled after the Jun 23 2026 project review
+**Status:** Draft v2.1 — overhauled after the Jun 23 2026 project review; data-sufficiency audit added Jun 24 2026 (§5f)
 **Builds on:** [`junhos_work.md`](junhos_work.md) (Hong, *GenomeOcean: Sparse Upcycling and Expert Specialization in Genomic MoE*, May 2026)
 
 ---
@@ -40,10 +40,10 @@ Sub-questions:
 | P2 | Best routing-aware detector > every named classical tool and dense LGM on held-out genomes (AUPRC, boundary-F1) | A dense LGM or classical tool matches/beats it within bootstrap CI |
 | P3 | ≥1 expert per element shows significant log₂ enrichment over the marginal-masked null; ablating it raises element-token cross-entropy with DiD ≫ 0 vs a **matched intergenic non-element** control (not CDS) | No causal expert exists for any class (DiD CI overlaps 0) |
 | P4 | Upcycled regulatory experts are causal (DiD ≫ 0); scratch counterparts weaker or null | Scratch matches upcycled on causality |
-| P5 | Routing detectors transfer across held-out phyla better than dense embeddings (smaller drop) | Routing transfer ≤ embedding transfer |
+| P5 | **(promoters & RBS only — Rho lacks cross-genome data, §5f)** Routing detectors transfer across held-out phyla better than dense embeddings (smaller drop) | Routing transfer ≤ embedding transfer |
 | P6 | In-domain bacterial promoter routing recovers, unlike the OOD eukaryotic GUE promoter task (routing_only MCC 0.039 vs embedding 0.779) | Routing collapses on in-domain bacterial promoters too |
 | P7 | **Regulatory, not structural.** Routing discriminates each element from its same-context, same-position decoy, and the advantage survives partialling out the structural-class routing axis | Discrimination collapses once structural class/position is held fixed — the model only re-detected "intergenic vs coding" |
-| **P8 (Nic K)** | **Generalization, not memorization.** On the **sequence-dissimilar (≤60% identity) unseen split**, the routing-aware detector stays above the GC-matched baseline | Performance collapses toward chance on dissimilar elements → the model was riding sequence similarity to training |
+| **P8 (Nic K)** | **Generalization, not memorization.** On the **sequence-dissimilar (≤60% identity) unseen split** — *cross-genome* for promoters & RBS, *intra-E. coli* for Rho (§5f) — the routing-aware detector stays above the GC-matched baseline | Performance collapses toward chance on dissimilar elements → the model was riding sequence similarity to training |
 | **P9 (retraining branch, §10)** | The **bug-corrected** retrained model reproduces the expert-specialization and detection results, **and** a model pretrained with the validation set **excluded** preserves the unseen-split performance | Conclusions flip under the corrected model, or unseen-split performance depends on the validation data having been in pretraining (i.e., leakage) |
 
 P0, P8, and P9 are the v2 additions: a go/no-go signal check, an explicit not-memorizing test, and a leakage/robustness control. We report all predictions regardless of direction.
@@ -131,10 +131,30 @@ The dataset is now the centerpiece, because the team's main concern is **proving
 - Ground-truth sources (experimental, never software-predicted):
   - **Promoters/TSS:** RegulonDB (strong-evidence only), PRODORIC, DBTBS/SubtiWiki, dRNA-seq TSS catalogs (H. pylori, M. tuberculosis, Synechocystis, Campylobacter, Salmonella, B. subtilis).
   - **RBS:** ribosome-profiling TIS maps; SD defined −20..−1 of confirmed starts; anti-SD pairing; leaderless transcripts as contrast.
-  - **Rho terminators:** NET-seq + bicyclomycin readthrough (Peters et al. 2012), Term-seq (Dar et al. 2016), RhoTermPredict positives; intrinsic terminators as contrast. *Limited mostly to E. coli → run as a deep case study; carry cross-genome claims on promoters and RBS.*
+  - **Rho terminators:** NET-seq + bicyclomycin readthrough (Peters et al. 2012, ~1,000 E. coli sites), Term-seq (Dar et al. 2016, predominantly intrinsic), RhoTermPredict positives; intrinsic terminators as contrast. *Limited almost entirely to E. coli → run as a deep case study with an intra-E. coli unseen split; carry cross-genome claims on promoters and RBS only. Full census and consequences in §5f.*
 
 ### 5e. Pretraining-leakage caveat (motivates §10)
 GO-MoE was pretrained on ~645 Gbp of metagenomic data, so a validation genome can overlap the **backbone's** pretraining even when it is sequence-dissimilar to the **probe's** training set. The sequence-similarity holdout controls leakage at the probe level; fully closing the question at the backbone level requires the optional retraining branch (§10).
+
+### 5f. Data provenance and per-element sufficiency (verified Jun 24 2026 — the binding constraint)
+
+**NCBI alone is not a label source, and was never one.** A direct check of the best-annotated bacterial genome on NCBI — *E. coli* K-12 RefSeq `NC_000913.3` — returns **zero `regulatory_class` features** (no `promoter`, no `ribosome_binding_site`, no `terminator`; the only "terminator" strings are protein product names). NCBI RefSeq/PGAP supplies only **(i) the genome sequence** and **(ii) structural gene coordinates** (CDS / tRNA / rRNA / ncRNA — the same scaffold Junho used; verified gene counts: E. coli 4,290 CDS, B. subtilis 4,237, M. tuberculosis 3,906, P. aeruginosa 5,572, S. aureus 2,767). In this project NCBI therefore plays exactly two roles: the **sequence substrate**, and the **structural scaffold** that defines CDS starts (for RBS windows), intergenic spans, and the same-context decoys (§5c). **Every regulatory label comes from the experimental databases below, not from NCBI.** A pipeline that expects to read promoter/RBS/terminator truth out of NCBI is reading empty features and must be corrected.
+
+**Per-element data census (verified counts, Jun 24 2026):**
+
+| Element | Experimental ground-truth source(s) | Volume | Organism / phylum breadth | Cross-genome unseen split (P5, P8) feasible? |
+|---|---|---|---|---|
+| **σ-promoters / TSS** | RegulonDB v12 (E. coli: **4,050** promoters, 3,705 TUs), PRODORIC (27 organisms, TFBS-centric), dRNA-seq TSS catalogs (H. pylori, M. tuberculosis, Synechocystis, Campylobacter, Salmonella, B. subtilis) | ~4k strong E. coli + thousands across ~6 further organisms / ≥4 phyla | **Yes** — multi-phylum; supports leave-one-phylum-out and the ≤60% cross-genome unseen split |
+| **Shine-Dalgarno RBS** | Derived from confirmed CDS starts (−20..−1); ribosome-profiling TIS maps for confirmed starts + the leaderless-negative | Positives: **every** annotated start (~20k across the 5 core genomes); clean confirmed/leaderless labels: a handful of organisms | **Positives yes (every genome); the clean leaderless-negative is the limiter** — confident leaderless calls need ribosome/TSS data (E. coli, B. subtilis, M. tuberculosis, a few more) |
+| **Rho-dependent terminators** | Peters 2012 NET-seq+BCM (E. coli, ~1,000), Peters 2009 (~200), Term-seq / Dar 2016 (predominantly *intrinsic*) | ~1k, **almost entirely E. coli** | **No** — effectively a single-genome class; only an **intra-E. coli ≤60%-identity** split is valid |
+
+**Consequences for the methodology (binding):**
+
+1. **Promoters and RBS carry the cross-genome generalization claims** (P5; cross-genome P8). **Rho terminators are scoped to an E. coli deep case study** with an **intra-E. coli sequence-dissimilar (≤60% identity)** split — still a valid not-memorizing test *within* E. coli, since the ~1,000 *rut* sites are sequence-diverse (C-rich, unstructured, weakly conserved) — but **no leave-one-phylum-out and no cross-genome unseen claim for Rho.** P5, P8, and §11 are updated to reflect this.
+2. The clean RBS Tier-2 negative (leaderless starts) is only confidently available where ribosome-profiling / TSS data exist. Elsewhere RBS positives use annotated starts and negatives fall back to intrinsic/CDS-internal windows, with the start-annotation error reported as a covariate.
+3. **CDBProm** (~24M predicted promoters across ~6,000 organisms) is **software-predicted** and therefore **excluded from ground truth** per §12; it may serve only as a weak-label or baseline comparator, never as a positive label.
+
+**Week-1 data-census gate (new — precedes the Phase-0 gate).** Before clustering, count — per element and per regime — the number of **independent ≤60%-identity clusters** that survive MMseqs2/CD-HIT deduplication. Pre-register a minimum (target: ≥30 held-out clusters spanning ≥2 phyla for a *cross-genome* unseen claim; ≥30 clusters for an *intra-genome* claim). Any element/regime below threshold is formally demoted to "case study, no generalization claim" **before** Phase 0, so a headline generalization number is never reported on a class that lacks the data to support it. This makes the §5e leakage argument and P8 contingent on a counted, committed census rather than an assumption.
 
 ---
 
@@ -185,8 +205,8 @@ The frozen path (§7) is primary. This branch is a **stretch / collaborative** c
 
 ## 11. Generalization & transfer (RQ-C)
 
-- **Primary (Nic K):** the **sequence-dissimilar unseen split** (Regime B, §5b, P8) — performance vs max-identity-to-training curve, against the GC-matched baseline.
-- **Secondary:** **leave-one-phylum-out** transfer (P5) — routing should drop less than dense embeddings on held-out phyla (Junho's AMI 0.15 vs 0.80), a second, independent MoE-advantage axis.
+- **Primary (Nic K):** the **sequence-dissimilar unseen split** (Regime B, §5b, P8) — performance vs max-identity-to-training curve, against the GC-matched baseline. **Cross-genome** for promoters & RBS; **intra-E. coli only** for Rho terminators, which lack the multi-genome experimental data for a cross-genome unseen claim (§5f).
+- **Secondary:** **leave-one-phylum-out** transfer (P5) — routing should drop less than dense embeddings on held-out phyla (Junho's AMI 0.15 vs 0.80), a second, independent MoE-advantage axis. **Promoters & RBS only:** Rho terminators are excluded from leave-one-phylum-out (single-genome data, §5f).
 
 ---
 
@@ -261,7 +281,7 @@ Restructured to put the Phase-0 gate and the sequence-similarity split first. Th
 
 | Week | Focus | Deliverables | Refs |
 |------|-------|--------------|------|
-| **1** | **Dataset + split** | Pull 5 core genomes + experimental labels; build 300 bp windows + same-context decoys; **cluster by sequence identity and commit the 80/20 ≤60% split**; lock all splits to files. | §5, §6 |
+| **1** | **Dataset + split + data census** | Pull 5 core genome **sequences from NCBI** and **regulatory labels from the experimental DBs** (RegulonDB/PRODORIC/dRNA-seq/NET-seq — *not* NCBI, §5f); build 300 bp windows + same-context decoys; **run the per-element data-census gate (§5f) and demote any class below the cluster threshold to case-study status before Phase 0**; **cluster by sequence identity and commit the 80/20 ≤60% split**; lock all splits to files. | §5, §6 |
 | **2** | **Phase 0 smoke test (gate)** | Frozen feature extraction; run the smoke test vs the GC-matched baseline on seen data (P0). Go/no-go; if no-go, run the §4 diagnosis tree. | §4, §7 |
 | **3** | **Detection + baselines (RQ-A)** | Train linear-probe detectors; score head-to-head vs classical tools and dense LGMs on held-out genomes. | §3, §8, §9a |
 | **4** | **MoE-necessity + generalization (RQ-B/C)** | Expert ablation (DiD, intergenic control, partial-out), upcycled-vs-scratch, promoter-vs-RBS acid test; **unseen (Regime B) generalization curve** (P8) + leave-one-phylum-out. | §9, §11 |
