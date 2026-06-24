@@ -129,6 +129,20 @@ All results are reported regardless of direction — if a prediction is wrong, t
 
 ---
 
+## The Backup Plan: Optional Retraining (Secondary Path)
+
+The main approach uses the **frozen model** — no retraining, just reading out its internal states. But there are two situations where retraining might be needed as a backup, depending on what the results show. This is explicitly secondary: it requires significant compute (4 high-end GPUs, weeks of training) and is only pursued with mentor support.
+
+**Reason 1 — A known bug in the training code.**
+A math error was found in the upcycling process: when the dense model was converted to an MoE, the weights weren't rescaled correctly after a dropout step. The model still converged to good loss values, so it probably doesn't change the conclusions — but to be sure, the fix would be applied and the model retrained to confirm the expert-specialization and detection results still hold.
+
+**Reason 2 — The "did it cheat?" question.**
+The model was pretrained on 645 billion base pairs of metagenomic DNA. Some of those sequences might overlap with the validation data used to test it. The sequence-similarity holdout (the 60% identity cutoff described above) controls for this at the probe level — but it doesn't guarantee the model backbone never saw those sequences during its original training. The only way to fully close this question is to retrain the model from scratch with the validation genomes explicitly excluded, then check whether performance on novel sequences holds up. If it does, the result is genuine generalization. If it collapses, the original model was partly riding on having seen that data before.
+
+**The honest scope:** The plan is explicit that full retraining is "likely unnecessary" based on the code review, and is beyond the scope of a single intern. It only runs if Phase 0 passes early and mentor/compute support is available. The frozen path stands on its own; retraining only strengthens the argument.
+
+---
+
 ## What Gets Delivered
 
 1. A **go/no-go ceiling report** from the smoke test (guaranteed deliverable even if everything else fails)
