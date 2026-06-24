@@ -1,7 +1,7 @@
 # Research Plan: Expert-Routed Annotation of Bacterial Regulatory Elements with GenomeOcean-MoE
 
 **Author:** Beto Damian
-**Status:** Draft v2.2 — overhauled after the Jun 23 2026 project review; data-sufficiency audit (§5f) and verified database sourcing (§5d) added Jun 24 2026
+**Status:** Draft v2.3 — overhauled after the Jun 23 2026 project review; data-sufficiency audit (§5f) and verified database sourcing (§5d) added Jun 24 2026; curated RBS database created (`data/rbs_database/`) Jun 24 2026
 **Builds on:** [`junhos_work.md`](junhos_work.md) (Hong, *GenomeOcean: Sparse Upcycling and Expert Specialization in Genomic MoE*, May 2026)
 
 ---
@@ -137,10 +137,21 @@ The dataset is now the centerpiece, because the team's main concern is **proving
   - **PRODORIC** (https://www.prodoric.de/, 27 organisms): TFBS-centric; use for σ-factor binding site motifs and as a secondary cross-check for organisms in PPD.
   - *Excluded:* CDBProm (24M predicted promoters, software-generated — not experimental ground truth per §12).
 
-  **RBS / Shine-Dalgarno — no dedicated multi-organism DB; derived from two sources**
-  - **Positive class:** −20..−1 nt upstream of every confirmed annotated start in NCBI PGAP annotation. SD match scored by free-energy pairing to anti-SD (GGAGG complement). This yields ~20k+ candidates per core genome.
-  - **Leaderless negative class (Tier-2):** *M. tuberculosis* has a genome-wide experimentally confirmed leaderless transcriptome (Cortes et al. 2013; ~25% of genes start without a detectable 5′ UTR / SD), providing the cleanest same-position, same-context negatives. For other organisms where ribosome-profiling TIS maps exist (E. coli retapamulin Ribo-seq, B. subtilis), use those. Where not available, fall back to CDS-internal windows as Tier-1 (labeled explicitly as weaker, not counted in headline Tier-2 numbers).
-  - **Ribosome profiling TIS maps** (SRA, per-paper): used to confirm true starts for organisms where annotated CDS starts have high error rates.
+  **RBS / Shine-Dalgarno — curated in-house database: `data/rbs_database/`**
+
+  No public multi-organism experimental RBS database exists. A curated database was built from verified experimental sources (see [`data/rbs_database/README.md`](../data/rbs_database/README.md) for full schema, evidence hierarchy, curation rules, and per-organism fetch instructions). Summary:
+
+  | Organism | Primary source | T1 TIS entries (est.) | Best leaderless-negative source |
+  |---|---|---|---|
+  | *E. coli* K-12 | Meydan et al. 2019 Ribo-RET (GSE122129); Nakahigashi 2016 TetRP (PRJDB2960); Saito 2020 ΔaSD Ribo-seq (GSE135906) | ~2,000–4,290 | UNSD-leadered from Meydan supp. table (~54% SD → ~46% non-SD) |
+  | *M. tuberculosis* H37Rv | Zhu et al. 2021 Ribo-seq (E-MTAB-8835); Cortes 2013 dRNA-seq (SRP028740) | ~3,500 | **497 ribosome-profiling-confirmed leaderless + ~1,040 dRNA-seq-confirmed leaderless** — primary leaderless negative class |
+  | *B. subtilis* 168 | Lalanne et al. 2017 Ribo-seq (GSE95211); Bhatt 2024 (GSE249450) | ~4,200 | rare leaderless (~6%); use UNSD-leadered as negative |
+  | *S. aureus* NCTC 8325 | Kohl et al. 2026 Nat Commun (extended-SD Ribo-seq, PMID 41680142) | ~2,700 | very few leaderless; extended SD motifs — note species-specific motif in SD window |
+  | *P. aeruginosa* PAO1 | PGAP-derived (Tier-2, no T1 Ribo-seq found as of Jun 2026) | ~5,570 (T2) | no leaderless call possible without TSS data |
+
+  **Evidence hierarchy** (T1 = ribosome-profiling TIS arrest; T2 = dRNA-seq leaderless or PGAP-derived; predicted labels excluded per §12). Tier-2 decoy for the probe uses T1 leaderless entries from MTB + UNSD entries from E. coli/B. subtilis. P. aeruginosa T2 entries are excluded from headline Tier-2 results until upgraded. Expected total: ~18,000–20,000 entries; ~11,000 SD positives; ~1,800 leaderless negatives.
+
+  SD classification uses ΔG pairing to anti-SD (Salis RBS Calculator v2.1, offline) applied to the −20..−1 window: ΔG ≤ −3.4 kcal/mol → SD; ΔG > −3.4 + 5′ UTR ≥ 1 nt → UNSD; 5′ UTR = 0 nt + TSS evidence → leaderless.
 
   **Rho-dependent terminators — E. coli deep case study only (§5f)**
   - **Peters et al. 2012** (PNAS 109:15584, NET-seq + bicyclomycin, ~1,000 E. coli Rho terminators): primary positive set; supplementary data downloadable from the journal.
