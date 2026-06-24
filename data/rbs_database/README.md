@@ -284,12 +284,24 @@ can wash it out, making RBS the element most likely to fail the Phase-0 smoke te
 (mean-pool vs per-position vs per-expert-bin), and leads with per-position / per-expert-bin
 routing views. If RBS fails Phase-0, enter the §4 failure-mode tree (mode 2) for RBS only.
 
-### Scope note — RBS experimental data spans 3 phyla
+### Scope note — RBS experimental data spans 4 bacterial phyla + an archaeal domain axis
 
-Gammaproteobacteria (E. coli), Actinobacteria (M. tuberculosis), Firmicutes (B. subtilis,
-S. aureus). *P. aeruginosa* (also Gammaproteobacteria) contributes **no experimental** RBS
-truth (PGAP-derived T2 only). Leave-one-phylum-out (P5) for RBS = 3 phyla. S. aureus is the
-strongest cross-genome generalization test (genuinely divergent SD sequence, not just flanks).
+Updated 2026-06-24 (strengthening). Experimental genome-wide TIS data now covers:
+- **Gammaproteobacteria** — E. coli (Ribo-RET/TetRP/ΔaSD)
+- **Actinobacteria** — M. tuberculosis (Ribo-seq; leaderless-rich)
+- **Firmicutes** — B. subtilis + S. aureus (extended SD)
+- **Alphaproteobacteria** — Caulobacter crescentus (GSE54883; Ribo-seq + 5'-RACE + proteomics) — NEW 4th phylum
+- **Archaea (domain transfer)** — Haloferax volcanii (NAR 2020 48:5201; >70% leaderless) — NEW domain axis
+
+Leave-one-phylum-out (P5) for RBS now spans **4 bacterial phyla**; *H. volcanii* adds a
+bacteria→archaea **domain-transfer** test (the strongest generalization probe — a different
+domain of life, leaderless-dominated). *S. aureus* extended-SD remains the strongest
+*within-bacteria* divergent-motif test. *P. aeruginosa* still contributes no experimental
+RBS truth (PGAP-derived T2 only) and is excluded from the experimental phylum tally.
+
+This strengthening adds genome-wide *experimental* TIS organisms only — it does not relax
+the experimental-evidence standard, change the SD-vs-UNSD decoy design, or alter the project
+goal (GO-MoE vs classical tools / dense gLMs). It only widens the generalization panel.
 
 ### Minor — dataset condition heterogeneity
 
