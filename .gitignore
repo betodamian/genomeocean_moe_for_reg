@@ -38,3 +38,6 @@ data/download/_tmp/
 *.sra
 *.bw
 *.bigwig
+
+# Generated datasets (windows/decoys) — regenerable via pipeline/
+data/datasets/
