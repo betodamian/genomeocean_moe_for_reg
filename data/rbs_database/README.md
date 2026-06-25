@@ -92,10 +92,11 @@ drawn from Meydan et al. 2019 supplementary table.
 
 Two complementary datasets — the best single-organism leaderless negative source:
 
-1. **Zhu et al. 2021 (Ribo-seq)** — PMID 33513356  
-   Accession: E-MTAB-8835 (ArrayExpress)  
-   3,569 genes quantified (88.5% of translatome).  
-   SD: 546 (15%) | UNSD: 678 (19%) | Leaderless: 497 (14%) | Operons/unassigned: ~51%
+1. **Sawyer et al. 2021 (Ribo-seq)** — PMID 33535039, PMCID PMC7856553  
+   *Cell Reports* 34:108695. DOI: 10.1016/j.celrep.2021.108695  
+   Accession: mmc2.xlsx / mmc3.xlsx / mmc4.xlsx (auto-fetched via EuropePMC OA route)  
+   Genome-wide TIS mapping in *M. tuberculosis* H37Rv.  
+   Note: PMID 33513356 (pharmacology paper) was a prior erroneous entry — corrected 2026-06-25.
 
 2. **Cortes et al. 2013 (dRNA-seq)** — PMID 24268774  
    Accession: SRP028740 (SRA)  
@@ -109,14 +110,18 @@ same-position, no-SD negative class of any organism in this panel.
 
 ### B. subtilis 168 (genome: GCF_000009045.1 / NC_000964.3)
 
-1. **Lalanne et al. 2017 (Ribo-seq)** — PMID 29144454  
-   Accession: GSE95211 (GEO)  
-   Genome-wide translation stoichiometry; ~78% of B. subtilis genes carry SD motif
-   (consistent with genomic estimates; Wen et al. 1995).
+1. **Lalanne et al. 2018 (Ribo-seq)** — PMID 29606352, PMCID PMC5978003  
+   *Cell* 173:749–761. DOI: 10.1016/j.cell.2018.03.007  
+   Accession: journal SI (institutional access); supplementary tables mmc1–mmc4 downloaded manually 2026-06-25.  
+   4,176 B. subtilis 168 genes with TIS positions + normalized ribosome footprint densities.  
+   ~78% of B. subtilis genes carry SD motif (consistent with genomic estimates; Wen et al. 1995).  
+   Note: PMID 29144454 (P-type ATPase paper) was a prior erroneous entry — corrected 2026-06-25.
 
-2. **Bhatt et al. 2024 (Ribo-seq, sporulation time course)** — PMID 39179838  
-   Accession: GSE249450 (GEO)  
-   Comprehensive multi-stage dataset; use for additional TIS calls.
+2. **Iwańska et al. 2024 (Ribo-seq, sporulation time course)** — PMCID PMC11339384  
+   *Nature Communications* 15. DOI: 10.1038/s41467-024-51654-6  
+   Accession: MOESM xlsx files (auto-fetched via EuropePMC OA route)  
+   B. subtilis sporulation-stage ribosome profiling; use for additional TIS calls.  
+   Note: PMID 39179838 (404/wrong paper) was a prior erroneous entry — corrected 2026-06-25.
 
 **Notes:** B. subtilis has the highest known SD usage of any model organism (~78%).
 Very few leaderless genes. Use as a high-SD positive-enriched organism.
@@ -209,16 +214,16 @@ No dedicated genome-wide TIS profiling study found as of Jun 2026. Strategy:
 #    Download supplementary table S1 from PMID 30904393 (Molecular Cell)
 #    or raw reads from GEO GSE122129 and re-call with Ribo-RET pipeline.
 
-# 2. M. tuberculosis TIS — Zhu et al. 2021 (primary)
-#    Download E-MTAB-8835 from ArrayExpress:
-#    https://www.ebi.ac.uk/arrayexpress/experiments/E-MTAB-8835/
-#    Supplementary Table S2 contains per-gene TIS class (SD/UNSD/leaderless).
+# 2. M. tuberculosis TIS — Sawyer et al. 2021 (primary; PMID 33535039, PMC7856553)
+#    Auto-fetched via EuropePMC OA route (mmc2/mmc3/mmc4.xlsx).
+#    DOI: https://doi.org/10.1016/j.celrep.2021.108695
 
 # 3. M. tuberculosis leaderless — Cortes et al. 2013
 #    Download SRP028740 from SRA or supplementary GFF from PMID 24268774 (Cell Reports).
 
-# 4. B. subtilis — Lalanne et al. 2017
-#    GEO: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE95211
+# 4. B. subtilis — Lalanne et al. 2018 (PMID 29606352, PMC5978003)
+#    Supplementary mmc1–mmc4.xlsx downloaded manually (institutional access, Cell journal).
+#    DOI: https://doi.org/10.1016/j.cell.2018.03.007
 
 # 5. S. aureus — Kohl et al. 2026
 #    Retrieve GEO/SRA accession from paper Methods (Nat Commun doi:10.1038/s41467-026-69079-8).

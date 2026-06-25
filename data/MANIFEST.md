@@ -49,13 +49,13 @@ live in journal SI → **PIPELINE/MANUAL**; GEO supplementary signal pulled wher
 
 | Organism | Source / accession | Status |
 |---|---|---|
-| *E. coli* Ribo-RET | Meydan 2019, GEO **GSE122129** | TIS table in journal SI → **MANUAL**; GEO signal **PIPELINE** |
+| *E. coli* Ribo-RET | Meydan et al. 2019 *Mol Cell*, PMID 30904393, PMC7115971 | Tables S1/S2 xlsx downloaded manually 2026-06-25; parsed → `ecoli_riboret_tis_sites.tsv` (5,904 TIS records). **PULLED** |
 | *E. coli* TetRP | Nakahigashi 2016, DDBJ **PRJDB2960** | **PIPELINE** (raw reads) |
 | *E. coli* ΔaSD | Saito 2020, GEO **GSE135906** | wig signal **PULLED** (`GSE135906_62wigfiles.tar.gz`) → PIPELINE |
-| *M. tuberculosis* Ribo-seq | Zhu 2021, ArrayExpress **E-MTAB-8835** | per-gene SD/UNSD/leaderless table in SI → **MANUAL** |
+| *M. tuberculosis* Ribo-seq | Sawyer et al. 2021 *Cell Reports*, PMID 33535039, PMC7856553. DOI 10.1016/j.celrep.2021.108695 | mmc2/mmc3/mmc4.xlsx auto-fetched via EuropePMC. **PULLED** (note: prior entry listed Zhu 2021 / PMID 33513356 — wrong paper, corrected 2026-06-25) |
 | *M. tuberculosis* dRNA-seq leaderless | Cortes 2013, SRA **SRP028740** | **PIPELINE** |
-| *B. subtilis* Ribo-seq | Lalanne 2017, GEO **GSE95211** | **PIPELINE** |
-| *B. subtilis* sporulation | Bhatt 2024, GEO **GSE249450** | **PIPELINE** |
+| *B. subtilis* Ribo-seq | Lalanne et al. 2018 *Cell*, PMID 29606352, PMC5978003. DOI 10.1016/j.cell.2018.03.007 | mmc1–mmc4.xlsx downloaded manually 2026-06-25; parsed → `bsub_riboret_tis_sites.tsv` (4,176 TIS positions). **PULLED** (note: prior entry listed Lalanne 2017 / PMID 29144454 — wrong paper, corrected 2026-06-25) |
+| *B. subtilis* sporulation | Iwańska et al. 2024 *Nat Commun*, PMCID PMC11339384. DOI 10.1038/s41467-024-51654-6 | MOESM xlsx auto-fetched via EuropePMC. **PULLED** (note: prior entry listed Bhatt 2024 / PMID 39179838 — wrong paper, corrected 2026-06-25) |
 | *S. aureus* extended-SD | Kohl 2026, *Nat Commun* 10.1038/s41467-026-69079-8 | accession in SI → **MANUAL** |
 | *C. crescentus* | Schrader 2014, GEO **GSE54883** | **PIPELINE** |
 | *H. volcanii* (archaea) | Gelsinger 2020, *NAR* 48:5201 | accession in SI → **MANUAL** |
