@@ -57,6 +57,11 @@ SOURCES = [
      "https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004463 (Schrader 2014; S18/S23 datasets)"),
     ("SAUR_EXSD",     "rbs", "pmid:41680142",
      "https://www.nature.com/articles/s41467-026-69079-8 (Kohl 2026; Supplementary Data)"),
+    # HVOLC_RIBOSEQ: Gelsinger 2020 NAR (PMID 32382758, PMCID PMC7261190) — OA; fetched automatically.
+    #   H. volcanii DS2 ribosome profiling; 1,413 annotated TIS + novel/extension TIS.
+    ("HVOLC_RIBOSEQ", "rbs", "pmcid:PMC7261190",
+     "https://academic.oup.com/nar/article/48/10/5201/5831329 "
+     "(Gelsinger 2020 NAR; Ribo_MS_TableS1_final.xlsx in nested supp zip)"),
     # MTB_RHODUC: Botella 2017 Nat Commun (PMID 28348398, PMCID PMC5379054) — OA; fetched automatically.
     #   Genome-wide Rho-dependent termination sites in M. tuberculosis (xlsx S2–S9 + s10.txt).
     ("MTB_RHODUC",    "rho", "pmcid:PMC5379054",

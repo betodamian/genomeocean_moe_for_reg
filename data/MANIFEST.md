@@ -56,9 +56,9 @@ live in journal SI → **PIPELINE/MANUAL**; GEO supplementary signal pulled wher
 | *M. tuberculosis* dRNA-seq leaderless | Cortes 2013, SRA **SRP028740** | **PIPELINE** |
 | *B. subtilis* Ribo-seq | Lalanne et al. 2018 *Cell*, PMID 29606352, PMC5978003. DOI 10.1016/j.cell.2018.03.007 | mmc1–mmc4.xlsx downloaded manually 2026-06-25; parsed → `bsub_riboret_tis_sites.tsv` (4,176 TIS positions). **PULLED** (note: prior entry listed Lalanne 2017 / PMID 29144454 — wrong paper, corrected 2026-06-25) |
 | *B. subtilis* sporulation | Iwańska et al. 2024 *Nat Commun*, PMCID PMC11339384. DOI 10.1038/s41467-024-51654-6 | MOESM xlsx auto-fetched via EuropePMC. **PULLED** (note: prior entry listed Bhatt 2024 / PMID 39179838 — wrong paper, corrected 2026-06-25) |
-| *S. aureus* extended-SD | Kohl 2026, *Nat Commun* 10.1038/s41467-026-69079-8 | accession in SI → **MANUAL** |
+| *S. aureus* extended-SD | Kohl 2026, *Nat Commun* PMID 41680142, PMC13009471. DOI 10.1038/s41467-026-69079-8 | MOESM3.xlsx auto-fetched 2026-06-25; contains 46 novel sORF TIS only. Full annotated TIS not available as processed table (other MMOESMs are PDFs); PGAP GFF is T2 fallback. **PARTIAL** |
 | *C. crescentus* | Schrader 2014, GEO **GSE54883** | **PIPELINE** |
-| *H. volcanii* (archaea) | Gelsinger 2020, *NAR* 48:5201 | accession in SI → **MANUAL** |
+| *H. volcanii* (archaea) | Gelsinger 2020, *NAR* 48:5201, PMID 32382758, PMC7261190. DOI 10.1093/nar/gkaa210 | Ribo_MS_TableS1_final.xlsx auto-fetched via EuropePMC 2026-06-25; parsed → `hvolc_riboseq_tis_sites.tsv` (1,555 rows: 1,413 annotated TIS + 142 novel/extension). **PULLED** |
 | *P. aeruginosa* | PGAP-derived from GCF_000006765.1 GFF (T2) | derivable from pulled genome |
 
 ## 4. Rho-dependent terminators (§5d; full catalog `data/rho_database/sources.tsv`)
@@ -66,20 +66,43 @@ live in journal SI → **PIPELINE/MANUAL**; GEO supplementary signal pulled wher
 | Organism | Source / accession | Status |
 |---|---|---|
 | *E. coli* Term-seq 3′-ends | NAR 2018 46:6797, GEO **GSE109766** | per-position signal **PULLED** (`GSE109766_…counts_per_position.txt.gz`) → PIPELINE |
-| *E. coli* BCM Rho | Peters 2012, *PNAS* (≈1,000 sites) | site table in SI → **MANUAL** |
-| *M. tuberculosis* RhoDUC | Botella 2022, ArrayExpress **E-MTAB-11753** (1,385 sites) | raw BAMs (200–350 MB ea., skipped); site table in SI → **MANUAL** |
-| *B. subtilis* H-SELEX (in vitro) | PMC12350095 (600 BsRho rut) | SI → **MANUAL** |
-| Intrinsic decoy (TERMITe) | PMC12207403, Zenodo + GitHub (13 species) | **MANUAL** (Zenodo) |
-| RhoTermPredict (cross-check only) | PMC6407284 | **MANUAL** (algorithm-derived; never headline, §12) |
+| *E. coli* BCM Rho | Peters et al. 2012, *PNAS* 109:15584, PMID 22918380. DOI 10.1073/pnas.1208577109 | ≈1,000 BCM readthrough sites; Table S2 in SI. PNAS not in PMC; **MANUAL** (open at pnas.org after login, download SI Appendix, extract Table S2) |
+| *M. tuberculosis* RhoDUC | Botella et al. 2022/2023 *iScience*, PMID 37096044, PMC10122055. DOI 10.1016/j.isci.2023.106465; ArrayExpress **E-MTAB-11753** | 1,385 RD-TTS; mmc2–mmc8.xlsx available at PMC10122055 but behind reCAPTCHA. Also have Botella 2017 Nat Commun (PMC5379054) → 303 RSRs (different paper). **MANUAL** (open PMC10122055 in browser, download mmc2–mmc8.xlsx to `data/rho_database/raw/MTB_RHODUC2/`) |
+| *B. subtilis* H-SELEX (in vitro) | PMC12350095 (600 BsRho rut) | Auto-fetched via EuropePMC 2026-06-24; parsed → `bsub_hselex_sites.tsv` (4,789 rows). **PULLED** |
+| Intrinsic decoy (TERMITe) | PMC12207403, Zenodo + GitHub (13 species) | Auto-fetched via EuropePMC 2026-06-24; parsed → `intrinsic_termite_sites.tsv` (5,646 rows). **PULLED** |
+| RhoTermPredict (cross-check only) | PMC6407284 (algorithm-derived; never headline, §12) | Auto-fetched via EuropePMC 2026-06-24; parsed → `rhotermpredict_sites.tsv` (23,976 rows). **PULLED** |
+| *M. tuberculosis* Rho (Botella 2017) | Botella et al. 2017 *Nat Commun*, PMID 28348398, PMC5379054. DOI 10.1038/ncomms14731 | Auto-fetched via EuropePMC 2026-06-24; parsed → `mtb_rhoduc_sites.tsv` (303 RSRs). **PULLED** (different from Botella 2022; included as T1 in vivo supplementary) |
 
 ---
 
-## What is local now
-`data/genomes/` (7 genomes, FASTA+GFF) · `data/promoters/PPD/` (29 species, 129,149 promoters) ·
-`data/rbs_database/raw/` (E. coli ΔaSD wig signal) · `data/rho_database/raw/` (E. coli Rho
-Term-seq per-position signal). All under `data/download/checksums.txt`.
+## What is local now (updated 2026-06-25)
+
+**Genomes:** `data/genomes/` — 7 genomes (FASTA+GFF): E. coli, B. subtilis, MTB, P. aeruginosa, S. aureus, C. crescentus, H. volcanii.
+
+**Promoters:** `data/promoters/PPD/` — 129,149 promoters; windows built in `data/datasets/promoters/ALL.tsv` (28,098 rows); 80/20 split + census committed to `splits/promoters/`.
+
+**RBS TSVs** (gitignored, in `data/rbs_database/raw/<SOURCE>/`):
+- `ecoli_riboret_tis_sites.tsv` — 5,904 rows (Meydan 2019)
+- `ecoli_tetrp_tis_sites.tsv` — 249 rows (Nakahigashi 2016)
+- `mtb_riboseq_tis_sites.tsv` — 3,569 rows (Sawyer 2021, 98% GFF-matched)
+- `bsub_riboret_tis_sites.tsv` — 4,176 rows (Lalanne 2018)
+- `bsub_spore_tis_sites.tsv` — 4,332 rows (Iwańska 2024)
+- `caulo_riboseq_tis_sites.tsv` — 3,885 rows (Schrader 2014)
+- `saur_exsd_tis_sites.tsv` — 46 rows (Kohl 2026, novel sORFs only)
+- `hvolc_riboseq_tis_sites.tsv` — 1,555 rows (Gelsinger 2020: 1,413 annotated + 142 novel/extension)
+
+**Rho TSVs** (gitignored, in `data/rho_database/raw/<SOURCE>/`):
+- `mtb_rhoduc_sites.tsv` — 303 RSRs (Botella 2017)
+- `bsub_hselex_sites.tsv` — 4,789 rut peaks (B. subtilis H-SELEX, in vitro T2)
+- `intrinsic_termite_sites.tsv` — 5,646 sites (TERMITe, E. coli + B. subtilis only)
+- `rhotermpredict_sites.tsv` — 23,976 predictions (cross-check only, never headline)
+
+**Still needed (manual download — see §4 above for exact URLs):**
+1. Peters 2012 E. coli BCM Rho sites (~1,000) — CRITICAL for T1 E. coli Rho positives
+2. Botella 2022/2023 MTB Rho sites (1,385) — upgrade from 303 Botella 2017 RSRs
 
 ## Next (Week 1, per research_plan §16)
-Run the TIS/peak-calling pipeline on the PIPELINE rows to convert signal → element coordinates;
-hand-fetch the MANUAL journal-SI tables (DOIs in the per-element `sources.tsv`); then build
-300-bp windows + same-context decoys and the 80/20 ≤60%-identity split (§5b, §5c).
+- Manual downloads above (Peters 2012, Botella 2022)
+- Build RBS 300-bp windows + same-context decoys → `data/datasets/rbs/`
+- Run RBS census gate + 80/20 ≤60%-identity split
+- Build Rho windows + census + split → `data/datasets/rho/`

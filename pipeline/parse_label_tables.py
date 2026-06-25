@@ -503,6 +503,96 @@ def parse_rhotermpredict():
 
 
 # ════════════════════════════════════════════════════════════════════════════
+# H. volcanii Ribosome Profiling — Gelsinger 2020 NAR 48:5201
+# PMID 32382758, PMCID PMC7261190, DOI 10.1093/nar/gkaa210
+# File: data/rbs_database/raw/HVOLC_RIBOSEQ/Ribo_MS_TableS1_final.xlsx
+# Sheets: Annotated (1771), Unannotated TSS (18), smORF TSS (68),
+#         Internal_Inframe (27), Internal_OutofFrame (16), N-terminal_extension (31)
+# Annotated cols: Type, Start, Stop, Gene, Strand, Size(aa)
+# Other sheets:   Type, Start, Stop, Strand, Size(aa), Start_codon, Peptide, Name, [Corresponding_gene]
+# tis_pos = Start if + else Stop (1-based, H. volcanii DS2 GCF_000025685.1)
+# ════════════════════════════════════════════════════════════════════════════
+
+def parse_hvolc_riboseq():
+    src = "HVOLC_RIBOSEQ"
+    xlsx = os.path.join(RBS, src, "Ribo_MS_TableS1_final.xlsx")
+    book = wb(xlsx)
+
+    # --- Sheet: Annotated -------------------------------------------------
+    # cols: Type(0), Start(1), Stop(2), Gene(3), Strand(4), Size_aa(5)
+    ANNOTATED_SHEET = "Annotated"
+    # --- Other sheets: same positional layout minus Gene col --------------
+    OTHER_SHEETS = [
+        "Unannotated TSS", "smORF TSS",
+        "Internal_Inframe", "Internal_OutofFrame", "N-terminal_extension",
+    ]
+
+    rows = []
+
+    def _add(type_label, start, stop, strand, locus_tag, gene_name, start_codon, notes_extra):
+        try:
+            start, stop = int(start), int(stop)
+        except (TypeError, ValueError):
+            return
+        if strand not in ("+", "-"):
+            return
+        # Some sheets store minus-strand genes with Start > Stop (TIS at Start).
+        # Use max/min so both orderings are handled correctly.
+        tis_pos = min(start, stop) if strand == "+" else max(start, stop)
+        tis_end = max(start, stop) if strand == "+" else min(start, stop)
+        rows.append(dict(
+            source_id=src,
+            organism="haloferax_volcanii",
+            strain="DS2",
+            gene_name=gene_name or "",
+            locus_tag=locus_tag or "",
+            tis_pos=tis_pos,
+            tis_end=tis_end,
+            strand=strand,
+            start_codon=start_codon or "",
+            ribo_density="",
+            sd_motif="",
+            sd_pos_rel="",
+            evidence_type="T1",
+            notes=f"type={type_label};{notes_extra}",
+        ))
+
+    # Annotated sheet
+    for r in sheet_rows(book, ANNOTATED_SHEET, skip=1):
+        type_label, start, stop, gene, strand, size_aa = r[0], r[1], r[2], r[3], r[4], r[5]
+        _add(type_label, start, stop, strand,
+             locus_tag=str(gene) if gene else "",
+             gene_name=str(gene) if gene else "",
+             start_codon="",
+             notes_extra=f"size_aa={size_aa}")
+
+    # Other sheets: Type(0), Start(1), Stop(2), Strand(3), Size_aa(4),
+    #               Start_codon(5), Peptide(6), Name(7), [Corresponding_gene(8)]
+    for sheet_name in OTHER_SHEETS:
+        if sheet_name not in book.sheetnames:
+            continue
+        for r in sheet_rows(book, sheet_name, skip=1):
+            type_label = r[0]
+            start, stop, strand = r[1], r[2], r[3]
+            size_aa  = r[4] if len(r) > 4 else None
+            sc       = r[5] if len(r) > 5 else None
+            name     = r[7] if len(r) > 7 else None
+            corr     = r[8] if len(r) > 8 else None
+            notes_extra = f"size_aa={size_aa}"
+            if corr:
+                notes_extra += f";corresponding_gene={corr}"
+            _add(type_label, start, stop, strand,
+                 locus_tag=str(name) if name else "",
+                 gene_name=str(name) if name else "",
+                 start_codon=str(sc) if sc else "",
+                 notes_extra=notes_extra)
+
+    book.close()
+    out = os.path.join(RBS, src, f"{src.lower()}_tis_sites.tsv")
+    return write_tsv(rows, RBS_FIELDS, out)
+
+
+# ════════════════════════════════════════════════════════════════════════════
 # MAIN
 # ════════════════════════════════════════════════════════════════════════════
 
@@ -514,6 +604,7 @@ def main():
     totals["SAUR_EXSD"]     = parse_saur_exsd()
     totals["MTB_RIBOSEQ"]   = parse_mtb_riboseq()
     totals["BSUB_SPORE"]    = parse_bsub_spore()
+    totals["HVOLC_RIBOSEQ"] = parse_hvolc_riboseq()
 
     print("\n=== Rho sources ===")
     totals["MTB_RHODUC"]        = parse_mtb_rhoduc()
