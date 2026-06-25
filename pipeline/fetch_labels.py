@@ -26,18 +26,48 @@ EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest/{}/supplementaryFiles"
 
 # (source_id, element, identifier, manual_link)
 SOURCES = [
-    ("ECOLI_RIBORET", "rbs", "pmid:30904393", "https://www.cell.com/molecular-cell/fulltext/S1097-2765(19)30119-3 (Meydan 2019; Mol Cell SI tables S1-S6)"),
-    ("ECOLI_NOMRNA",  "rbs", "pmid:32424076", "https://elifesciences.org/articles/55498/figures (Saito 2020; eLife supp files)"),
-    ("ECOLI_TETRP",   "rbs", "pmid:27013550", "https://academic.oup.com/dnaresearch/article/23/3/193/2469929 (Nakahigashi 2016; Supp Table 2-5)"),
-    ("MTB_RIBOSEQ",   "rbs", "pmid:33513356", "https://www.cell.com/cell-reports/fulltext/S2211-1247(20)31641-9 (Zhu 2021; Cell Rep Table S1-S2)"),
-    ("BSUB_RIBOSEQ",  "rbs", "pmid:29144454", "https://www.cell.com/cell-reports/fulltext/S2211-1247(17)31523-3 (Lalanne 2017; Cell Rep supp)"),
-    ("BSUB_SPORE",    "rbs", "pmid:39179838", "https://www.nature.com/articles/s41467-024-51654-6#Sec (Bhatt 2024; Supplementary Data)"),
-    ("CAULO_RIBOSEQ", "rbs", "doi:10.1371/journal.pgen.1004463", "https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004463 (Schrader 2014; S18/S23 datasets)"),
-    ("SAUR_EXSD",     "rbs", "pmid:41680142", "https://www.nature.com/articles/s41467-026-69079-8#Sec (Kohl 2026; Supplementary Data)"),
-    ("MTB_RHODUC",    "rho", "pmid:37096044", "https://www.cell.com/molecular-cell/fulltext/S1097-2765(23)00224-6 (Botella 2022; Table S = 1,385 RD-TTS)"),
-    ("BSUB_HSELEX",   "rho", "pmcid:PMC12350095", "https://pmc.ncbi.nlm.nih.gov/articles/PMC12350095/ (B. subtilis H-SELEX rut sites)"),
-    ("INTRINSIC_TERMITE", "rho", "pmcid:PMC12207403", "https://academic.oup.com/nar/article/53/12/gkaf553 (TERMITe intrinsic atlas)"),
-    ("RHOTERMPREDICT","rho", "pmcid:PMC6407284", "https://pmc.ncbi.nlm.nih.gov/articles/PMC6407284/ (RhoTermPredict; cross-check only)"),
+    # ECOLI_RIBORET: Meydan 2019 Mol Cell (PMID 30904393, PMC7115971) — NOT OA in EuropePMC;
+    #   download Table S1–S6 from https://doi.org/10.1016/j.molcel.2019.02.017 (institutional access)
+    #   or PMC author-manuscript https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7115971/
+    ("ECOLI_RIBORET", "rbs", "pmid:30904393",
+     "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7115971/ "
+     "(Meydan 2019 Mol Cell; Table S1-S6 at PMC or via institutional access DOI 10.1016/j.molcel.2019.02.017)"),
+    # ECOLI_NOMRNA: Saito 2020 eLife 55002 (PMCID PMC7043885) — OA but EuropePMC only has figures.
+    #   Raw data at GEO GSE135906 (WIG / FASTQ). For processed TIS table: download from
+    #   https://elifesciences.org/articles/55002 (Source data links within figures).
+    ("ECOLI_NOMRNA",  "rbs", "pmcid:PMC7043885",
+     "https://elifesciences.org/articles/55002 "
+     "(Saito 2020 eLife; data in GEO GSE135906 — WIG files; or source data attached to figures on eLife)"),
+    ("ECOLI_TETRP",   "rbs", "pmid:27013550",
+     "https://academic.oup.com/dnaresearch/article/23/3/193/2469929 (Nakahigashi 2016; Supp Table 2-5)"),
+    # MTB_RIBOSEQ: Sawyer 2021 Cell Rep (PMID 33535039, PMCID PMC7856553) — OA; fetched automatically.
+    ("MTB_RIBOSEQ",   "rbs", "pmcid:PMC7856553",
+     "https://doi.org/10.1016/j.celrep.2021.108695 "
+     "(Sawyer et al. 2021 Cell Reports; Table S = mmc2/mmc3/mmc4.xlsx)"),
+    # BSUB_RIBOSEQ: Lalanne 2018 Cell (PMID 29606352, PMCID PMC5978003) — NOT OA in EuropePMC;
+    #   download supplementary tables from https://doi.org/10.1016/j.cell.2018.03.007 (institutional access).
+    ("BSUB_RIBOSEQ",  "rbs", "pmid:29606352",
+     "https://doi.org/10.1016/j.cell.2018.03.007 "
+     "(Lalanne et al. 2018 Cell; B. subtilis TIS data in supplementary tables; institutional access required)"),
+    # BSUB_SPORE: Iwanska 2024 Nat Commun (PMID 39169056, PMCID PMC11339384) — OA; fetched automatically.
+    ("BSUB_SPORE",    "rbs", "pmcid:PMC11339384",
+     "https://www.nature.com/articles/s41467-024-51654-6 "
+     "(Iwanska et al. 2024 Nat Commun; B. subtilis sporulation translation; MOESM xlsx files)"),
+    ("CAULO_RIBOSEQ", "rbs", "doi:10.1371/journal.pgen.1004463",
+     "https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1004463 (Schrader 2014; S18/S23 datasets)"),
+    ("SAUR_EXSD",     "rbs", "pmid:41680142",
+     "https://www.nature.com/articles/s41467-026-69079-8 (Kohl 2026; Supplementary Data)"),
+    # MTB_RHODUC: Botella 2017 Nat Commun (PMID 28348398, PMCID PMC5379054) — OA; fetched automatically.
+    #   Genome-wide Rho-dependent termination sites in M. tuberculosis (xlsx S2–S9 + s10.txt).
+    ("MTB_RHODUC",    "rho", "pmcid:PMC5379054",
+     "https://www.nature.com/articles/ncomms14731 "
+     "(Botella 2017 Nat Commun; MTB Rho termination sites in supplementary xlsx S2-S9)"),
+    ("BSUB_HSELEX",   "rho", "pmcid:PMC12350095",
+     "https://pmc.ncbi.nlm.nih.gov/articles/PMC12350095/ (B. subtilis H-SELEX rut sites)"),
+    ("INTRINSIC_TERMITE", "rho", "pmcid:PMC12207403",
+     "https://academic.oup.com/nar/article/53/12/gkaf553 (TERMITe intrinsic atlas)"),
+    ("RHOTERMPREDICT","rho", "pmcid:PMC6407284",
+     "https://pmc.ncbi.nlm.nih.gov/articles/PMC6407284/ (RhoTermPredict; cross-check only)"),
 ]
 
 def curl(url, out=None, timeout=120):
