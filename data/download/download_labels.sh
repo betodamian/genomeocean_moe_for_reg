@@ -39,16 +39,27 @@ pull_geo () {                # $1=GSE id  $2=dest dir  $3=description
 # ---------- RBS / TIS sources (research_plan.md §5d, data/rbs_database/sources.tsv) ----------
 pull_geo GSE122129 data/rbs_database/raw "E. coli Ribo-RET TIS (Meydan 2019)"
 pull_geo GSE135906 data/rbs_database/raw "E. coli ribosome profiling, daSD (Saito 2020)"
-pull_geo GSE95211  data/rbs_database/raw "B. subtilis Ribo-seq (Lalanne 2017)"
-pull_geo GSE249450 data/rbs_database/raw "B. subtilis sporulation Ribo-seq (Bhatt 2024)"
+pull_geo GSE95211  data/rbs_database/raw "B. subtilis Ribo-seq (Lalanne 2018, Cell)"
+pull_geo GSE249450 data/rbs_database/raw "B. subtilis sporulation Ribo-seq (Iwanska 2024)"
 pull_geo GSE54883  data/rbs_database/raw "Caulobacter crescentus Ribo-seq+5'-RACE (Schrader 2014)"
+
+# S. aureus Ribo-RET full TIS signal (Kohl 2026) — RAW.tar of 16 wig tracks (8.8 MB).
+# Not caught by pull_geo (filters .wig.gz/.tar); fetch the series RAW.tar directly.
+# chrom=HG001 (~NCTC 8325, ~1.6 kb diff); TIS table via Week-1 peak-calling.
+echo ">>> GSE299221  (S. aureus Ribo-RET TIS signal, Kohl 2026)"
+mkdir -p data/rbs_database/raw/SAUR_RIBORET
+curl -s -m 300 -L -o data/rbs_database/raw/SAUR_RIBORET/GSE299221_RAW.tar \
+  "$(geo_suppl_dir GSE299221)GSE299221_RAW.tar" \
+  && echo "    get: GSE299221_RAW.tar ($(wc -c < data/rbs_database/raw/SAUR_RIBORET/GSE299221_RAW.tar) bytes)"
 
 # ---------- Rho sources (research_plan.md §5d, data/rho_database/sources.tsv) ----------
 pull_geo GSE109766 data/rho_database/raw "E. coli Rho Term-seq 3'-ends (NAR 2018)"
 
 # ---------- ArrayExpress (MTB) — listed via BioStudies API ----------
+# NOTE: MTB RBS was sourced from Sawyer 2021 (Cell Reports, PMC7856553), not the
+#   E-MTAB-8835 listing below; MTB Rho processed table from Botella 2022 (PMC10122055).
 for acc in E-MTAB-8835 E-MTAB-11753; do
-  echo ">>> $acc  (ArrayExpress — MTB; $( [ "$acc" = E-MTAB-8835 ] && echo 'Ribo-seq Zhu 2021' || echo 'Rho RhoDUC Botella 2022' ))"
+  echo ">>> $acc  (ArrayExpress — MTB; $( [ "$acc" = E-MTAB-8835 ] && echo 'Ribo-seq (raw; RBS table from Sawyer 2021 SI)' || echo 'Rho RhoDUC Botella 2022 (raw BAMs; table from PMC10122055)' ))"
   curl -s -m 40 "https://www.ebi.ac.uk/biostudies/api/v1/studies/$acc" \
     | python -c "import sys,json
 try: d=json.load(sys.stdin)
@@ -67,11 +78,10 @@ echo "================ MANUAL / WEEK-1-PIPELINE FETCH (not auto-pullable) ======
 echo " RegulonDB v12 (E. coli promoters/TUs/terminators, sigma-subtyping): SPA site;"
 echo "   fetch release files from https://regulondb.ccg.unam.mx (Downloads) — see MANIFEST."
 echo " E. coli TetRP TIS (Nakahigashi 2016): DDBJ BioProject PRJDB2960 (raw reads)."
-echo " S. aureus extended-SD TIS (Kohl 2026): GEO/SRA in paper data-availability (verify)."
 echo " M. tuberculosis dRNA-seq leaderless (Cortes 2013): SRA SRP028740."
-echo " TERMITe intrinsic terminator atlas: Zenodo + GitHub (per PMC12207403)."
-echo " Peters 2012 E. coli Rho (BCM): PNAS supplementary tables."
-echo " B. subtilis H-SELEX rut sites: PMC12350095 supplementary."
-echo " Journal supplementary tables (per-gene TIS class) for Meydan/Zhu/Botella:"
-echo "   download from each paper's SI (DOIs in data/*_database/sources.tsv)."
+echo " TERMITe intrinsic terminator atlas: Zenodo + GitHub (per PMC12207403) — now pulled via EuropePMC."
+echo " Peters 2012 E. coli Rho (BCM): Genes Dev 26:2621 (PMC3521622) Supplemental_tables.xls — now pulled."
+echo " B. subtilis H-SELEX rut sites: PMC12350095 supplementary — now pulled via EuropePMC."
+echo " Most journal-SI label tables are now auto-fetched by pipeline/fetch_labels.py (EuropePMC OA route)"
+echo "   and parsed by pipeline/parse_label_tables.py; see data/MANIFEST.md for per-source status."
 echo "===================================================================================="
