@@ -593,6 +593,73 @@ def parse_hvolc_riboseq():
 
 
 # ════════════════════════════════════════════════════════════════════════════
+# MTB Rho-dependent TTS — Botella et al. 2022/2023 iScience
+# PMID 37096044, PMCID PMC10122055, DOI 10.1016/j.isci.2023.106465
+# ArrayExpress E-MTAB-11753 (raw BAMs only; processed sites are in SI)
+# Files: data/rho_database/raw/MTB_RHODUC2/mmc2.xlsx – mmc8.xlsx
+# mmc5.xlsx "High confidence RD TTS": 439 rows
+#   cols: ID(0), Position(1), Strand(2), Locus(3), Gene name(4),
+#         TTS type(5), Class(6), score(7)
+#   TTS types: True_TTS (299), Cond_TTS (125), SecCond_TTS (15)
+#   Class A = Rho-associated; O = other; I = intrinsic (not in this sheet)
+# Position = exact bp 3'-end of nascent RNA (1-based, H37Rv NC_000962.3)
+# Method: RhoDUC genetic Rho depletion (MTB Rho is BCM-resistant → orthogonal)
+# NOTE: research plan cited "1,385 RD-TTS"; mmc5 has 439 high-confidence.
+#   mmc4 "Classification of TTS" has 2568 total (class A=437 + P=184 + O=181 non-intrinsic).
+# ════════════════════════════════════════════════════════════════════════════
+
+def parse_mtb_rhoduc2():
+    src = "MTB_RHODUC2"
+    xlsx = os.path.join(RHO, src, "mmc5.xlsx")
+    if not os.path.exists(xlsx):
+        print(f"  [{src}] mmc5.xlsx not found — skipping")
+        return 0
+
+    book = wb(xlsx)
+    ws = book["High confidence RD TTS"]
+    # cols: ID(0), Position(1), Strand(2), Locus(3), Gene name(4),
+    #        TTS type(5), Class(6), score(7)
+
+    rows = []
+    for r in sheet_rows(book, "High confidence RD TTS", skip=1):
+        site_id  = r[0]
+        pos      = r[1]
+        strand   = r[2]
+        locus    = r[3]
+        gene     = r[4]
+        tts_type = r[5]
+        cls      = r[6]
+        score    = r[7]
+
+        try:
+            pos = int(pos)
+        except (TypeError, ValueError):
+            continue
+        if strand not in ("+", "-"):
+            continue
+
+        rows.append(dict(
+            source_id=src,
+            organism="mtuberculosis",
+            strain="H37Rv",
+            site_id=str(site_id),
+            site_start=pos,
+            site_end=pos,
+            strand=strand,
+            site_class=f"rho_TTS_{tts_type}",
+            terminates_or_silences="T",
+            sequence=None,
+            evidence_type="T1",
+            notes=f"locus={locus};gene={gene};class={cls};score={score};"
+                  f"method=RhoDUC_genetic_depletion",
+        ))
+
+    book.close()
+    out = os.path.join(RHO, src, f"{src.lower()}_sites.tsv")
+    return write_tsv(rows, RHO_FIELDS, out)
+
+
+# ════════════════════════════════════════════════════════════════════════════
 # MAIN
 # ════════════════════════════════════════════════════════════════════════════
 
@@ -608,6 +675,7 @@ def main():
 
     print("\n=== Rho sources ===")
     totals["MTB_RHODUC"]        = parse_mtb_rhoduc()
+    totals["MTB_RHODUC2"]       = parse_mtb_rhoduc2()
     totals["BSUB_HSELEX"]       = parse_bsub_hselex()
     totals["INTRINSIC_TERMITE"] = parse_intrinsic_termite()
     totals["RHOTERMPREDICT"]    = parse_rhotermpredict()
