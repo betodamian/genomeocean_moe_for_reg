@@ -717,7 +717,7 @@ def parse_mtb_rhoduc2():
 
         rows.append(dict(
             source_id=src,
-            organism="mtuberculosis",
+            organism="mtuberculosis_H37Rv",
             strain="H37Rv",
             site_id=str(site_id),
             site_start=pos,
