@@ -147,7 +147,7 @@ The dataset is now the centerpiece, because the team's main concern is **proving
   | *E. coli* K-12 | Meydan et al. 2019 Ribo-RET (GSE122129); Nakahigashi 2016 TetRP (PRJDB2960); Saito 2020 ΔaSD Ribo-seq (GSE135906) | ~2,000–4,290 | UNSD-leadered from Meydan supp. table (~54% SD → ~46% non-SD) |
   | *M. tuberculosis* H37Rv | **Sawyer et al. 2021** Ribo-seq (Cell Reports, PMID 33535039, PMC7856553); Cortes 2013 dRNA-seq (SRP028740) | ~3,500 (3,569 pulled) | **497 ribosome-profiling-confirmed leaderless + ~1,040 dRNA-seq-confirmed leaderless** — primary leaderless negative class |
   | *B. subtilis* 168 | **Lalanne et al. 2018** Ribo-seq (Cell, PMID 29606352, PMC5978003); **Iwańska 2024** sporulation (Nat Commun, PMC11339384) | ~4,200 (4,176 + 4,332 pulled) | rare leaderless (~6%); use UNSD-leadered as negative |
-  | *S. aureus* NCTC 8325 | Kohl et al. 2026 Nat Commun (extended-SD Ribo-seq, PMID 41680142) | ~2,700 | very few leaderless; extended SD motifs — note species-specific motif in SD window |
+  | *S. aureus* NCTC 8325 | Kohl et al. 2026 Nat Commun (extended-SD Ribo-RET, PMID 41680142); full TIS signal GEO **GSE299221** | ~2,700 (full Ribo-RET signal pulled; TIS table pending peak-calling) + 46 novel sORFs parsed | very few leaderless; extended SD motifs — note species-specific motif in SD window. Coords HG001 ≈ NCTC 8325 (~1.6 kb diff, near-trivial liftover) |
   | *P. aeruginosa* PAO1 | PGAP-derived (Tier-2, no T1 Ribo-seq found as of Jun 2026) | ~5,570 (T2) | no leaderless call possible without TSS data |
 
   **Evidence hierarchy** (T1 = ribosome-profiling TIS arrest; T2 = dRNA-seq leaderless or PGAP-derived; predicted labels excluded per §12). Expected total: ~18,000–20,000 entries; ~11,000 SD positives; ~2,500–3,500 **UNSD-leadered** entries (the primary negative); ~1,800 leaderless (secondary negative). P. aeruginosa T2/PGAP-derived entries are excluded from headline Tier-2 results until upgraded.
@@ -220,9 +220,9 @@ Acquisition is reproducible per §14: fetch scripts in `data/download/` + SHA256
 
 **Pulled & parsed since Jun 24 (journal-SI label tables, now in `data/{rbs,rho}_database/raw/`, unified schema):** E. coli Ribo-RET (Meydan 2019, 2,296 BW25113 TIS) & TetRP (Nakahigashi 2016, 249); M. tuberculosis Ribo-seq (Sawyer 2021, 3,569); B. subtilis Ribo-seq (Lalanne 2018, 4,176) + sporulation (Iwańska 2024, 4,332); C. crescentus (Schrader 2014, 3,885); H. volcanii (Gelsinger 2020, 1,555); Peters 2012 E. coli Rho (1,264); Botella 2022 MTB Rho (439); B. subtilis H-SELEX (4,789); TERMITe intrinsic (5,646); RhoTermPredict (23,976, cross-check only). Full counts/provenance in [`data/MANIFEST.md`](../data/MANIFEST.md).
 
-**Still raw signal / not yet processed:** E. coli ΔaSD Ribo-seq (Saito 2020, GSE135906 WIG — deferred); E. coli Term-seq 3′-ends (GSE109766 per-position — not yet called); M. tuberculosis dRNA-seq leaderless (SRP028740); M. tuberculosis Rho raw BAMs (E-MTAB-11753, processed table used instead).
+**Still raw signal / not yet processed (Week-1 peak-calling pipeline):** S. aureus Ribo-RET (Kohl 2026, GSE299221 — 16 wig tracks pulled, ~2,700 TIS pending peak-calling + HG001→NCTC8325 liftover); E. coli ΔaSD Ribo-seq (Saito 2020, GSE135906 WIG — deferred); E. coli Term-seq 3′-ends (GSE109766 per-position — not yet called); M. tuberculosis dRNA-seq leaderless (SRP028740); M. tuberculosis Rho raw BAMs (E-MTAB-11753, processed table used instead).
 
-**Manual fetch still outstanding (SPA / no processed table):** RegulonDB v12 σ-subtyping; S. aureus full TIS table (Kohl 2026 — only 46 novel sORFs published as a table, see soundness note §5d).
+**Manual fetch still outstanding (SPA / no processed table):** RegulonDB v12 σ-subtyping (E. coli cross-check + σ sub-typing labels).
 
 The split between "pulled" and "pipeline/manual" reflects reality: NCBI genomes and the curated promoter database download directly, whereas RBS/Rho *labels* are processed outputs of ribosome-/Term-seq experiments whose final coordinate tables live in journal supplements — exactly the Week-1 processing the timeline (§16) allots.
 
