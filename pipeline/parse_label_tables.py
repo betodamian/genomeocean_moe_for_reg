@@ -27,6 +27,33 @@ RHO_FIELDS = ["source_id","organism","strain","site_id",
               "site_start","site_end","strand","site_class",
               "terminates_or_silences","sequence","evidence_type","notes"]
 
+# ── Controlled evidence vocabulary (per research_plan §12 tier-gating) ────────
+# Headline ground truth = T1_* (in vivo). T2_* (in vitro) flagged separately.
+# ALGO_* never used as headline ground truth (anti-circularity, §12).
+# Applied centrally in write_tsv() so every source emits one normalized tier;
+# method detail (BCM vs depletion, retapamulin vs tetracycline) stays in notes.
+EVIDENCE_TIER = {
+    # RBS — ribosome-profiling translation-initiation sites (T1 in vivo)
+    "ECOLI_RIBORET": "T1_riboseq",
+    "ECOLI_TETRP":   "T1_riboseq",
+    "MTB_RIBOSEQ":   "T1_riboseq",
+    "BSUB_RIBOSEQ":  "T1_riboseq",
+    "BSUB_SPORE":    "T1_riboseq",
+    "CAULO_RIBOSEQ": "T1_riboseq",
+    "SAUR_EXSD":     "T1_riboseq",
+    "HVOLC_RIBOSEQ": "T1_riboseq",
+    # Rho-dependent terminators — in vivo
+    "ECOLI_BCM_RHO": "T1_invivo",
+    "MTB_RHODUC":    "T1_invivo",
+    "MTB_RHODUC2":   "T1_invivo",
+    # Intrinsic terminators (experimentally confirmed; Rho decoy/contrast class)
+    "INTRINSIC_TERMITE": "T1_termseq",
+    # in vitro
+    "BSUB_HSELEX":   "T2_invitro",
+    # algorithm-predicted — cross-check only, never headline (§12)
+    "RHOTERMPREDICT": "ALGO_xcheck",
+}
+
 def wb(path):
     return openpyxl.load_workbook(path, read_only=True)
 
@@ -40,6 +67,13 @@ def sheet_rows(workbook, sheet_name, skip=1):
         yield list(r)
 
 def write_tsv(rows, fields, path):
+    # Normalize evidence_type from the controlled vocabulary (single source of
+    # truth) so the §12 tier-gate can rely on T1_/T2_/ALGO_ prefixes.
+    if "evidence_type" in fields:
+        for r in rows:
+            tier = EVIDENCE_TIER.get(r.get("source_id"))
+            if tier:
+                r["evidence_type"] = tier
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=fields, delimiter="\t", lineterminator="\n",
@@ -542,7 +576,7 @@ def parse_hvolc_riboseq():
         tis_end = max(start, stop) if strand == "+" else min(start, stop)
         rows.append(dict(
             source_id=src,
-            organism="haloferax_volcanii",
+            organism="hvolcanii_DS2",
             strain="DS2",
             gene_name=gene_name or "",
             locus_tag=locus_tag or "",
@@ -589,6 +623,157 @@ def parse_hvolc_riboseq():
 
     book.close()
     out = os.path.join(RBS, src, f"{src.lower()}_tis_sites.tsv")
+    return write_tsv(rows, RBS_FIELDS, out)
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# E. coli Ribo-RET — Meydan et al. 2019 Mol Cell (PMID 30904393, PMC7115971)
+# Files: data/rbs_database/raw/ECOLI_RIBORET/
+#   TableS1_pTIS.xlsx          sheets: BW25113-pTISs, BL21-pTISs, Common iTISs,
+#                                      BW25113-specific iTISs, BL21-specific iTISs
+#   TableS2_Nterm_extensions.xlsx sheets: Common, BW25113-specific, BL21-specific
+# SOUNDNESS FIX (2026-06-26): the original ad-hoc parse mixed in 3,608 BL21 rows.
+#   BL21 is an E. coli B strain — its coordinates do NOT map to our K-12 genome
+#   NC_000913.3, and no BL21 genome is in the panel. We therefore KEEP ONLY the
+#   BW25113 (K-12 lineage) coordinates. BW25113 still differs from MG1655 by a
+#   handful of indels → window-builder must liftover by gene name (noted per row).
+# "Start position in BW25113" is already strand-aware (= start-codon position):
+#   + strand start<stop, - strand start>stop. So tis_pos = Start directly.
+# ════════════════════════════════════════════════════════════════════════════
+
+def parse_ecoli_riboret():
+    src = "ECOLI_RIBORET"
+    d = os.path.join(RBS, src)
+    rows = []
+
+    def _add(tis_type, gene, start_codon, start, stop, strand,
+             peak=None, rel_dens=None):
+        if start in ("", None) or stop in ("", None) or strand not in ("+", "-"):
+            return
+        try:
+            start, stop = int(start), int(stop)
+        except (TypeError, ValueError):
+            return
+        note = f"type={tis_type};strain_coords=BW25113;liftover_to_MG1655_required"
+        if peak not in (None, ""):
+            note += f";peak_height={peak}"
+        if rel_dens not in (None, ""):
+            note += f";rel_density={rel_dens}"
+        rows.append(dict(
+            source_id=src, organism="ecoli_K12_MG1655", strain="BW25113",
+            gene_name=str(gene) if gene else "", locus_tag="",
+            tis_pos=start, tis_end=stop, strand=strand,
+            start_codon=str(start_codon) if start_codon else "",
+            ribo_density=rel_dens if rel_dens not in (None, "") else "",
+            sd_motif="", sd_pos_rel="", evidence_type="T1_riboseq", notes=note,
+        ))
+
+    # ── TableS1: primary TIS + internal TIS (BW25113 only) ────────────────
+    b1 = wb(os.path.join(d, "TableS1_pTIS.xlsx"))
+
+    # BW25113-pTISs: Type, Gene, StartCodon, AAlen, Peak, Start, Stop, Strand
+    for r in sheet_rows(b1, "BW25113-pTISs", skip=1):
+        _add(r[0], r[1], r[2], r[5], r[6], r[7], peak=r[4])
+
+    # BW25113-specific iTISs: Type,Gene,Upstream,StartCodon,AAlen,Peak,
+    #                         Start,Stop,Strand,RelDensity
+    for r in sheet_rows(b1, "BW25113-specific iTISs", skip=1):
+        _add(r[0], r[1], r[3], r[6], r[7], r[8], peak=r[5], rel_dens=r[9])
+
+    # Common iTISs: ...StartBW25113(8),StopBW25113(9),...,Strand(12),RelDensBW(13)
+    for r in sheet_rows(b1, "Common iTISs", skip=1):
+        _add(r[0], r[1], r[4], r[8], r[9], r[12], peak=r[6], rel_dens=r[13])
+    b1.close()
+
+    # ── TableS2: N-terminal extensions (BW25113 only) ─────────────────────
+    b2 = wb(os.path.join(d, "TableS2_Nterm_extensions.xlsx"))
+    # Common: Type,Gene,StartCodon,AAlen,PeakBW(4),PeakBL(5),StartBW(6),StopBW(7),
+    #         StartBL(8),StopBL(9),Strand(10)
+    for r in sheet_rows(b2, "Common", skip=1):
+        _add(r[0], r[1], r[2], r[6], r[7], r[10], peak=r[4])
+    # BW25113-specific: Type,Gene,StartCodon,AAlen,Peak,Start,Stop,Strand
+    for r in sheet_rows(b2, "BW25113-specific", skip=1):
+        _add(r[0], r[1], r[2], r[5], r[6], r[7], peak=r[4])
+    b2.close()
+
+    out = os.path.join(d, "ecoli_riboret_tis_sites.tsv")
+    return write_tsv(rows, RBS_FIELDS, out)
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# B. subtilis Ribo-seq — Lalanne et al. 2018 Cell (PMID 29606352, PMC5978003)
+# File: data/rbs_database/raw/BSUB_RIBOSEQ/TableS1_synthesis_rates.xlsx
+# Sheet "2_ B. subtilis": Gene, Start, Stop, Strand(1=fwd/0=rev),
+#   Normalized ribosome footprint density, 25th pct, 75th pct  (header at row 3)
+# Per the sheet legend: positions are forward-strand coords ordered low→high;
+#   for the reverse strand Start/Stop refer to stop/start of the gene.
+#   So tis_pos = Start if + else Stop. Density may be NaN or "[bracketed]"
+#   (≤128 internal reads → low_reads flag).
+# ════════════════════════════════════════════════════════════════════════════
+
+def parse_bsub_riboseq():
+    src = "BSUB_RIBOSEQ"
+    d = os.path.join(RBS, src)
+    book = wb(os.path.join(d, "TableS1_synthesis_rates.xlsx"))
+    ws = book["2_ B. subtilis"]
+
+    # Find header row (Gene/Start/Stop/Strand)
+    header_idx = None
+    grid = list(ws.iter_rows(values_only=True))
+    for i, r in enumerate(grid):
+        if r and r[0] == "Gene" and r[1] == "Start" and r[2] == "Stop":
+            header_idx = i
+            break
+    if header_idx is None:
+        print(f"  [{src}] header not found in sheet '2_ B. subtilis'")
+        book.close()
+        return 0
+
+    rows = []
+    for r in grid[header_idx + 1:]:
+        if not r or r[0] in (None, ""):
+            continue
+        gene, start, stop, strand_bit, dens = r[0], r[1], r[2], r[3], r[4]
+        d25 = r[5] if len(r) > 5 else None
+        d75 = r[6] if len(r) > 6 else None
+        try:
+            start, stop = int(start), int(stop)
+        except (TypeError, ValueError):
+            continue
+        if strand_bit in (1, "1", 1.0):
+            strand = "+"
+        elif strand_bit in (0, "0", 0.0):
+            strand = "-"
+        else:
+            continue
+        tis_pos = start if strand == "+" else stop
+        tis_end = stop  if strand == "+" else start
+
+        # density: may be NaN or a "[bracketed]" low-read string
+        low_reads = False
+        dens_val = ""
+        if dens not in (None, ""):
+            s = str(dens).strip()
+            if s.startswith("[") and s.endswith("]"):
+                low_reads = True
+                s = s[1:-1]
+            if s.lower() not in ("nan", ""):
+                try:
+                    dens_val = float(s)
+                except ValueError:
+                    dens_val = ""
+
+        rows.append(dict(
+            source_id=src, organism="bsubtilis_168", strain="168",
+            gene_name=str(gene), locus_tag="",
+            tis_pos=tis_pos, tis_end=tis_end, strand=strand,
+            start_codon="", ribo_density=dens_val,
+            sd_motif="", sd_pos_rel="", evidence_type="T1_riboseq",
+            notes=f"low_reads={low_reads};d25={d25};d75={d75}",
+        ))
+    book.close()
+
+    out = os.path.join(d, "bsub_riboseq_tis_sites.tsv")
     return write_tsv(rows, RBS_FIELDS, out)
 
 
@@ -743,6 +928,8 @@ def parse_mtb_rhoduc2():
 def main():
     print("=== RBS sources ===")
     totals = {}
+    totals["ECOLI_RIBORET"] = parse_ecoli_riboret()
+    totals["BSUB_RIBOSEQ"]  = parse_bsub_riboseq()
     totals["ECOLI_TETRP"]   = parse_ecoli_tetrp()
     totals["CAULO_RIBOSEQ"] = parse_caulo_riboseq()
     totals["SAUR_EXSD"]     = parse_saur_exsd()

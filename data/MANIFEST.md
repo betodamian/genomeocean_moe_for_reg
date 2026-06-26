@@ -49,12 +49,12 @@ live in journal SI → **PIPELINE/MANUAL**; GEO supplementary signal pulled wher
 
 | Organism | Source / accession | Status |
 |---|---|---|
-| *E. coli* Ribo-RET | Meydan et al. 2019 *Mol Cell*, PMID 30904393, PMC7115971 | Tables S1/S2 xlsx downloaded manually 2026-06-25; parsed → `ecoli_riboret_tis_sites.tsv` (5,904 TIS records). **PULLED** |
+| *E. coli* Ribo-RET | Meydan et al. 2019 *Mol Cell*, PMID 30904393, PMC7115971 | Tables S1/S2 xlsx downloaded manually 2026-06-25; re-parsed 2026-06-26 into unified schema → `ecoli_riboret_tis_sites.tsv` (**2,296** BW25113 K-12 TIS). NOTE: dropped 3,608 BL21 rows (E. coli B strain — coords do not map to NC_000913.3); BW25113 coords need gene-name liftover to MG1655 (flagged per row). **PULLED** |
 | *E. coli* TetRP | Nakahigashi 2016, DDBJ **PRJDB2960** | **PIPELINE** (raw reads) |
 | *E. coli* ΔaSD | Saito 2020, GEO **GSE135906** | wig signal **PULLED** (`GSE135906_62wigfiles.tar.gz`) → PIPELINE |
 | *M. tuberculosis* Ribo-seq | Sawyer et al. 2021 *Cell Reports*, PMID 33535039, PMC7856553. DOI 10.1016/j.celrep.2021.108695 | mmc2/mmc3/mmc4.xlsx auto-fetched via EuropePMC. **PULLED** (note: prior entry listed Zhu 2021 / PMID 33513356 — wrong paper, corrected 2026-06-25) |
 | *M. tuberculosis* dRNA-seq leaderless | Cortes 2013, SRA **SRP028740** | **PIPELINE** |
-| *B. subtilis* Ribo-seq | Lalanne et al. 2018 *Cell*, PMID 29606352, PMC5978003. DOI 10.1016/j.cell.2018.03.007 | mmc1–mmc4.xlsx downloaded manually 2026-06-25; parsed → `bsub_riboret_tis_sites.tsv` (4,176 TIS positions). **PULLED** (note: prior entry listed Lalanne 2017 / PMID 29144454 — wrong paper, corrected 2026-06-25) |
+| *B. subtilis* Ribo-seq | Lalanne et al. 2018 *Cell*, PMID 29606352, PMC5978003. DOI 10.1016/j.cell.2018.03.007 | TableS1 xlsx downloaded manually 2026-06-25; re-parsed 2026-06-26 into unified schema → `bsub_riboseq_tis_sites.tsv` (4,176 TIS positions, strand-aware tis_pos, low-reads flag). **PULLED** (note: prior entry listed Lalanne 2017 / PMID 29144454 — wrong paper, corrected 2026-06-25; file renamed from bsub_riboret→bsub_riboseq) |
 | *B. subtilis* sporulation | Iwańska et al. 2024 *Nat Commun*, PMCID PMC11339384. DOI 10.1038/s41467-024-51654-6 | MOESM xlsx auto-fetched via EuropePMC. **PULLED** (note: prior entry listed Bhatt 2024 / PMID 39179838 — wrong paper, corrected 2026-06-25) |
 | *S. aureus* extended-SD | Kohl 2026, *Nat Commun* PMID 41680142, PMC13009471. DOI 10.1038/s41467-026-69079-8 | MOESM3.xlsx auto-fetched 2026-06-25; contains 46 novel sORF TIS only. Full annotated TIS not available as processed table (other MMOESMs are PDFs); PGAP GFF is T2 fallback. **PARTIAL** |
 | *C. crescentus* | Schrader 2014, GEO **GSE54883** | **PIPELINE** |
@@ -82,10 +82,10 @@ live in journal SI → **PIPELINE/MANUAL**; GEO supplementary signal pulled wher
 **Promoters:** `data/promoters/PPD/` — 129,149 promoters; windows built in `data/datasets/promoters/ALL.tsv` (28,098 rows); 80/20 split + census committed to `splits/promoters/`.
 
 **RBS TSVs** (gitignored, in `data/rbs_database/raw/<SOURCE>/`):
-- `ecoli_riboret_tis_sites.tsv` — 5,904 rows (Meydan 2019)
+- `ecoli_riboret_tis_sites.tsv` — 2,296 rows (Meydan 2019; BW25113 K-12 only, BL21 dropped)
 - `ecoli_tetrp_tis_sites.tsv` — 249 rows (Nakahigashi 2016)
 - `mtb_riboseq_tis_sites.tsv` — 3,569 rows (Sawyer 2021, 98% GFF-matched)
-- `bsub_riboret_tis_sites.tsv` — 4,176 rows (Lalanne 2018)
+- `bsub_riboseq_tis_sites.tsv` — 4,176 rows (Lalanne 2018)
 - `bsub_spore_tis_sites.tsv` — 4,332 rows (Iwańska 2024)
 - `caulo_riboseq_tis_sites.tsv` — 3,885 rows (Schrader 2014)
 - `saur_exsd_tis_sites.tsv` — 46 rows (Kohl 2026, novel sORFs only)
