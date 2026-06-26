@@ -66,7 +66,7 @@ live in journal SI → **PIPELINE/MANUAL**; GEO supplementary signal pulled wher
 | Organism | Source / accession | Status |
 |---|---|---|
 | *E. coli* Term-seq 3′-ends | NAR 2018 46:6797, GEO **GSE109766** | per-position signal **PULLED** (`GSE109766_…counts_per_position.txt.gz`) → PIPELINE |
-| *E. coli* BCM Rho | Peters et al. 2012, *Genes Dev* 26:2621, PMID 23207917, PMC3521622. DOI 10.1101/gad.196741.112; GEO **GSE41936** (ChIP-chip) + **GSE41939** (RNA-seq BCM) | ≈1,000 Rho-dependent terminators; Supplemental Tables in SI. NOTE: research plan incorrectly cited as "PNAS 109:15584" — correct journal is Genes & Development. PMC3521622 SI behind reCAPTCHA; Genes Dev/CSHL returns 403 to automated requests. **MANUAL** (open https://pmc.ncbi.nlm.nih.gov/articles/PMC3521622/ in browser, download Supplemental Tables 1–5 to `data/rho_database/raw/ECOLI_BCM_RHO/`) |
+| *E. coli* BCM Rho | Peters et al. 2012, *Genes Dev* 26:2621, PMID 23207917, PMC3521622. DOI 10.1101/gad.196741.112; GEO **GSE41936** (ChIP-chip) + **GSE41939** (RNA-seq BCM) | `Supplemental_tables.xls` downloaded manually 2026-06-26; parsed → `ecoli_bcm_rho_sites.tsv` (1,264 BST sites: BCM-significant transcripts = Rho-dependent regions, incl. sense + antisense). NOTE: research plan incorrectly cited as "PNAS 109:15584" — correct journal is Genes & Development. **PULLED** |
 | *M. tuberculosis* RhoDUC | Botella et al. 2022/2023 *iScience*, PMID 37096044, PMC10122055. DOI 10.1016/j.isci.2023.106465; ArrayExpress **E-MTAB-11753** (raw BAMs only) | mmc5.xlsx downloaded manually 2026-06-26; parsed → `mtb_rhoduc2_sites.tsv` (439 high-confidence RD-TTS: 299 True + 125 Cond + 15 SecCond). NOTE: research plan said "1,385" — mmc5 has 439 high-confidence; mmc4 has 802 total non-intrinsic TTS. Also have Botella 2017 (303 RSRs) as separate source. **PULLED** |
 | *B. subtilis* H-SELEX (in vitro) | PMC12350095 (600 BsRho rut) | Auto-fetched via EuropePMC 2026-06-24; parsed → `bsub_hselex_sites.tsv` (4,789 rows). **PULLED** |
 | Intrinsic decoy (TERMITe) | PMC12207403, Zenodo + GitHub (13 species) | Auto-fetched via EuropePMC 2026-06-24; parsed → `intrinsic_termite_sites.tsv` (5,646 rows). **PULLED** |
@@ -97,9 +97,7 @@ live in journal SI → **PIPELINE/MANUAL**; GEO supplementary signal pulled wher
 - `intrinsic_termite_sites.tsv` — 5,646 sites (TERMITe, E. coli + B. subtilis only)
 - `rhotermpredict_sites.tsv` — 23,976 predictions (cross-check only, never headline)
 
-**Still needed (manual download — see §4 above for exact URLs):**
-1. Peters 2012 E. coli BCM Rho Supplemental Tables (~1,000 sites) — CRITICAL for T1 E. coli Rho positives
-   → URL: https://pmc.ncbi.nlm.nih.gov/articles/PMC3521622/ → download Supplemental Tables → save to `data/rho_database/raw/ECOLI_BCM_RHO/`
+**All experimental label sources now PULLED.** Ready to proceed to window-building.
 
 ## Next (Week 1, per research_plan §16)
 - Manual downloads above (Peters 2012, Botella 2022)

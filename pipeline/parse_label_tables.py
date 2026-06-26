@@ -593,6 +593,83 @@ def parse_hvolc_riboseq():
 
 
 # ════════════════════════════════════════════════════════════════════════════
+# E. coli BCM Rho-dependent terminators — Peters et al. 2012 Genes Dev
+# PMID 23207917, PMCID PMC3521622, DOI 10.1101/gad.196741.112
+# GEO GSE41936 (ChIP-chip) + GSE41939 (RNA-seq BCM)
+# File: data/rho_database/raw/ECOLI_BCM_RHO/Supplemental_tables.xls
+# Sheet "Table S1": Bicyclomycin Significant Transcripts (BSTs), 1264 rows
+#   cols (row 17 header): start, end, length, # probes, strand, gene, type,
+#     location, RNAseq (log2 +BCM/WT), rac_nusG, H-NS, MDS42_BCM, MDS42_nusG,
+#     MDS42_nusA
+# BSTs = regions where BCM (Rho inhibitor) increases RNA — i.e. Rho-terminated.
+# Coordinates: E. coli K-12 MG1655 (NC_000913, 1-based).
+# NOTE: research plan incorrectly called this "PNAS 109:15584" — correct journal
+#   is Genes & Development. Contains both sense and antisense Rho terminators.
+# ════════════════════════════════════════════════════════════════════════════
+
+def parse_ecoli_bcm_rho():
+    import xlrd
+    src = "ECOLI_BCM_RHO"
+    xls = os.path.join(RHO, src, "Supplemental_tables.xls")
+    if not os.path.exists(xls):
+        print(f"  [{src}] Supplemental_tables.xls not found — skipping")
+        return 0
+
+    book = xlrd.open_workbook(xls)
+    ws = book.sheet_by_name("Table S1")
+
+    # Find header row (contains 'start', 'end' in cols 0, 1)
+    header_row = None
+    for i in range(ws.nrows):
+        if ws.cell_value(i, 0) == "start" and ws.cell_value(i, 1) == "end":
+            header_row = i
+            break
+    if header_row is None:
+        print(f"  [{src}] Could not find header row in Table S1")
+        return 0
+
+    rows = []
+    for i in range(header_row + 1, ws.nrows):
+        row = [ws.cell_value(i, j) for j in range(ws.ncols)]
+        start = row[0]
+        end   = row[1]
+        length = row[2]
+        strand = row[4]
+        gene   = row[5]
+        bst_type = row[6]   # sense / antisense / N/A
+        location = row[7]   # end / within / UT
+        rnaseq_fc = row[8]  # log2(+BCM/WT)
+
+        if start in ("", None) or end in ("", None):
+            continue
+        try:
+            start, end = int(start), int(end)
+        except (TypeError, ValueError):
+            continue
+        if strand not in ("+", "-"):
+            continue
+
+        rows.append(dict(
+            source_id=src,
+            organism="ecoli_K12_MG1655",
+            strain="MG1655",
+            site_id=f"BST_{i - header_row:04d}",
+            site_start=start,
+            site_end=end,
+            strand=strand,
+            site_class=f"rho_BST_{bst_type}",
+            terminates_or_silences="T",
+            sequence=None,
+            evidence_type="T1",
+            notes=f"gene={gene};location={location};rnaseq_log2fc={rnaseq_fc:.3f};"
+                  f"length_bp={length};method=BCM_RNAseq",
+        ))
+
+    out = os.path.join(RHO, src, f"{src.lower()}_sites.tsv")
+    return write_tsv(rows, RHO_FIELDS, out)
+
+
+# ════════════════════════════════════════════════════════════════════════════
 # MTB Rho-dependent TTS — Botella et al. 2022/2023 iScience
 # PMID 37096044, PMCID PMC10122055, DOI 10.1016/j.isci.2023.106465
 # ArrayExpress E-MTAB-11753 (raw BAMs only; processed sites are in SI)
@@ -674,6 +751,7 @@ def main():
     totals["HVOLC_RIBOSEQ"] = parse_hvolc_riboseq()
 
     print("\n=== Rho sources ===")
+    totals["ECOLI_BCM_RHO"]     = parse_ecoli_bcm_rho()
     totals["MTB_RHODUC"]        = parse_mtb_rhoduc()
     totals["MTB_RHODUC2"]       = parse_mtb_rhoduc2()
     totals["BSUB_HSELEX"]       = parse_bsub_hselex()
