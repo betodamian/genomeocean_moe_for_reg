@@ -1,0 +1,97 @@
+{
+  "per_organism": {
+    "bsubtilis_168": {
+      "n_val": 872,
+      "gc_sd": 0.2721,
+      "kmer4_sd": 0.7913,
+      "emb_full": 0.1254,
+      "routing_full": 0.1122,
+      "emb_sd": 0.4001,
+      "routing_sd": 0.0969,
+      "routing_start": 0.0659,
+      "concat_sd": 0.3986
+    },
+    "ccrescentus_NA1000": {
+      "n_val": 770,
+      "gc_sd": 0.1978,
+      "kmer4_sd": 0.9098,
+      "emb_full": 0.2456,
+      "routing_full": 0.019,
+      "emb_sd": 0.5163,
+      "routing_sd": -0.0691,
+      "routing_start": 0.0322,
+      "concat_sd": 0.4906
+    },
+    "ecoli_BL21_DE3": {
+      "n_val": 610,
+      "gc_sd": 0.2338,
+      "kmer4_sd": 0.9017,
+      "emb_full": 0.0852,
+      "routing_full": 0.0507,
+      "emb_sd": 0.3463,
+      "routing_sd": 0.0429,
+      "routing_start": -0.0176,
+      "concat_sd": 0.3265
+    },
+    "ecoli_K12_MG1655": {
+      "n_val": 421,
+      "gc_sd": 0.2871,
+      "kmer4_sd": 0.8753,
+      "emb_full": 0.1049,
+      "routing_full": 0.0613,
+      "emb_sd": 0.2743,
+      "routing_sd": 0.08,
+      "routing_start": 0.0576,
+      "concat_sd": 0.2635
+    },
+    "hvolcanii_DS2": {
+      "n_val": 307,
+      "gc_sd": 0.1021,
+      "kmer4_sd": 0.813,
+      "emb_full": 0.1052,
+      "routing_full": -0.0246,
+      "emb_sd": 0.3108,
+      "routing_sd": -0.0643,
+      "routing_start": -0.0563,
+      "concat_sd": 0.2829
+    },
+    "mtuberculosis_H37Rv": {
+      "n_val": 710,
+      "gc_sd": 0.0887,
+      "kmer4_sd": 0.9099,
+      "emb_full": 0.2446,
+      "routing_full": 0.1114,
+      "emb_sd": 0.5353,
+      "routing_sd": 0.0224,
+      "routing_start": 0.0153,
+      "concat_sd": 0.53
+    },
+    "saureus_HG001": {
+      "n_val": 431,
+      "gc_sd": 0.2784,
+      "kmer4_sd": 0.892,
+      "emb_full": 0.134,
+      "routing_full": 0.0774,
+      "emb_sd": 0.3921,
+      "routing_sd": -0.0148,
+      "routing_start": -0.0781,
+      "concat_sd": 0.3686
+    }
+  },
+  "macro": {
+    "gc_sd": 0.2086,
+    "kmer4_sd": 0.8704,
+    "emb_full": 0.1493,
+    "routing_full": 0.0582,
+    "emb_sd": 0.3965,
+    "routing_sd": 0.0134,
+    "routing_start": 0.0027,
+    "concat_sd": 0.3801
+  },
+  "decision": {
+    "branch": "(b) non-specialization \u2014 un-pooling does NOT recover SD; router does not encode it",
+    "dilution": false,
+    "p1_at_sd_zone": false,
+    "concat_sd_beats_kmer4_sd": false
+  }
+}

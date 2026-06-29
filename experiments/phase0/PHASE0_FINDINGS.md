@@ -125,11 +125,44 @@ specialization** (the router simply does not allocate a channel to a short regul
 motif, unlike Junho's structural tRNA/rRNA experts — a real negative for P3 on RBS-SD).
 Either outcome is publishable; the per-position re-extraction distinguishes them.
 
+### RESOLVED (2026-06-29) — per-position (zonal) extraction: branch (b), non-specialization
+
+`phase0_extract_sd_zonal.py` re-extracted RBS features capturing **per-token** routing +
+hidden states, pooled over only the **SD-zone tokens** (−22..−3 from the start codon;
+token→bp coordinates reconstructed from BPE strings, **0/20,696 mismatches**) — i.e. no
+whole-window averaging. Within-organism ΔG regression (Spearman ρ, macro over 7 orgs):
+
+| view | ρ (predict SD ΔG) | reading |
+|---|---|---|
+| kmer4_sd (SD-region 4-mers) | **0.870** | SD signal is abundantly present in the SD-region sequence |
+| emb_sd (residual @ SD zone) | 0.397 | dense-accessible stream carries some; recovered by zooming in |
+| emb_full (residual, whole window) | 0.149 | …which whole-window pooling *was* diluting |
+| **routing_sd** (router @ SD zone) | **0.013** | the router is **blind to SD**, even un-pooled |
+| routing_full (router, whole window) | 0.058 | …un-pooling recovered nothing |
+
+**Verdict: (b) non-specialization.** Two clean, non-circular comparisons settle it:
+- **Dilution rejected (for routing):** `routing_sd` 0.013 ≈ `routing_full` 0.058 — pooling
+  over exactly the SD tokens recovered nothing. (For the *embedding*, dilution was real:
+  emb 0.149→0.397 when zoomed — but that channel is dense-accessible.)
+- **P1 fails at the SD zone:** `routing_sd` 0.013 ≪ `emb_sd` 0.397 — the MoE-specific
+  routing channel carries far *less* SD than the residual stream a dense model also has.
+
+**Interpretation.** The MoE router specializes for long, compositionally-distinct
+*structural* classes (Junho's tRNA/rRNA/intergenic experts) but **does not allocate a
+routing channel to the short Shine-Dalgarno motif.** This is an honest, interpretable
+boundary on MoE specialization — and a real **negative for P3/MoE-necessity on RBS-SD
+specifically**: any SD information lives in the residual stream (where a dense model can
+read it), not the routing channel. It does **not** affect the promoter / RBS-TIS / Rho
+results, where routing *does* beat embedding. The SD signal itself is real and strongly
+sequence-encoded (kmer4 ρ=0.87); the model is simply not routing on it.
+
 ## Next steps
 
-1. **RBS SD method fix (pre-registered, decisive):** re-extract RBS at 60/120 bp windows
-   + **per-position / per-expert-bin** routing views (not mean-pooled) and re-run the
-   ΔG re-analysis. Distinguishes pooling-dilution (a) from non-specialization (b) above.
+1. ~~**RBS SD method fix (pre-registered, decisive):** per-position routing views.~~
+   **DONE (2026-06-29) → branch (b) non-specialization** (see RESOLVED box above). The
+   router does not encode SD; SD lives in the dense-accessible residual stream. Report
+   as an honest negative for P3 on RBS-SD; carry RBS-TIS (which passed) as the headline
+   RBS result. No further SD method work needed for Phase 0.
 2. **Week 3 — detection vs baselines (P2):** run BPROM / Prodigal-RBS / RhoTermPredict
    and the dense gLMs (NT, DNABERT-2, Evo 2, ProkBERT, GO-dense) on the *same* held-out
    windows; compare AUPRC + boundary-F1.
