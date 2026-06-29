@@ -35,7 +35,8 @@ import torch
 EVAL_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "eval")
 sys.path.insert(0, EVAL_DIR)
 from eval_downstream import extract_features_moe          # noqa: E402
-from eval_utils import load_moe_model                     # noqa: E402
+from eval_utils import (init_distributed, init_parallel_state,  # noqa: E402
+                        load_moe_model)
 
 ELEMENTS = ("promoters", "rbs", "rho")
 _K = 4
@@ -109,6 +110,10 @@ def main():
 
     os.makedirs(args.output_dir, exist_ok=True)
     elements = ELEMENTS if args.element == "all" else (args.element,)
+
+    print("Initializing Megatron parallel state (TP=PP=EP=1) ...", flush=True)
+    init_distributed()
+    init_parallel_state()
 
     print(f"Loading frozen MoE from {args.checkpoint} ...", flush=True)
     model, tokenizer = load_moe_model(args)

@@ -17,7 +17,7 @@
 #
 #   sbatch pipeline/submit_phase0.sh
 #
-set -uo pipefail
+set -euo pipefail
 
 REPO=/global/scratch/users/bdamian6657/gomoe
 SIF=/global/scratch/users/junhohong2028/genomeocean_moe/nemo_25.09.sif
