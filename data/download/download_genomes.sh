@@ -22,6 +22,7 @@ GCF_000006765.1	paeruginosa_PAO1
 GCF_000013425.1	saureus_NCTC8325
 GCF_000022005.1	ccrescentus_NA1000
 GCF_000025685.1	hvolcanii_DS2
+GCF_000022665.1	ecoli_BL21_DE3
 EOF
 
 API="https://api.ncbi.nlm.nih.gov/datasets/v2alpha/genome/accession"

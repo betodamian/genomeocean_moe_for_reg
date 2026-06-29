@@ -27,6 +27,7 @@ sequence substrate + structural scaffold (NOT a regulatory-label source). Script
 | GCF_000013425.1 | *S. aureus* NCTC 8325 | core; RBS extended-SD | **PULLED** |
 | GCF_000022005.1 | *C. crescentus* NA1000 | RBS 4th phylum (Alphaproteobacteria) | **PULLED** |
 | GCF_000025685.1 | *H. volcanii* DS2 | RBS archaeal domain-transfer | **PULLED** |
+| GCF_000022665.1 | *E. coli* BL21(DE3) (NC_012971.2) | RBS extra TIS + same-species cross-strain (Meydan BL21 arm) | **PULLED** |
 
 Each: `<accession>_*_genomic.fna` + `<accession>_genomic.gff` in `data/genomes/<label>/`.
 
@@ -49,7 +50,8 @@ live in journal SI → **PIPELINE/MANUAL**; GEO supplementary signal pulled wher
 
 | Organism | Source / accession | Status |
 |---|---|---|
-| *E. coli* Ribo-RET | Meydan et al. 2019 *Mol Cell*, PMID 30904393, PMC7115971 | Tables S1/S2 xlsx downloaded manually 2026-06-25; re-parsed 2026-06-26 into unified schema → `ecoli_riboret_tis_sites.tsv` (**2,296** BW25113 K-12 TIS). NOTE: dropped 3,608 BL21 rows (E. coli B strain — coords do not map to NC_000913.3); BW25113 coords need gene-name liftover to MG1655 (flagged per row). **PULLED** |
+| *E. coli* Ribo-RET (K-12) | Meydan et al. 2019 *Mol Cell*, PMID 30904393, PMC7115971; GEO GSE122129 | Tables S1/S2 xlsx downloaded manually 2026-06-25; re-parsed 2026-06-26 into unified schema → `ecoli_riboret_tis_sites.tsv` (**2,296** BW25113 K-12 TIS). BW25113 coords need gene-name liftover to MG1655 (flagged per row). **PULLED** |
+| *E. coli* Ribo-RET (BL21) | Meydan et al. 2019, BL21 arm; reads mapped to CP001509.3 = **NC_012971.2** (genome_build, GSE122129) | Same source xlsx (BL21 sheets); parsed 2026-06-29 → `ecoli_bl21_riboret_tis_sites.tsv` (**3,773** TIS). Coords anchor **natively** to genome `ecoli_BL21_DE3` — validated 2,753/2,753 pTIS on exact start codons, **no liftover**. Cluster with K-12 before splitting (near-identical core genes → leakage risk). **PULLED** |
 | *E. coli* TetRP | Nakahigashi 2016, DDBJ **PRJDB2960** | **PIPELINE** (raw reads) |
 | *E. coli* ΔaSD | Saito 2020, GEO **GSE135906** | wig signal **PULLED** (`GSE135906_62wigfiles.tar.gz`) → PIPELINE |
 | *M. tuberculosis* Ribo-seq | Sawyer et al. 2021 *Cell Reports*, PMID 33535039, PMC7856553. DOI 10.1016/j.celrep.2021.108695 | mmc2/mmc3/mmc4.xlsx auto-fetched via EuropePMC. **PULLED** (note: prior entry listed Zhu 2021 / PMID 33513356 — wrong paper, corrected 2026-06-25) |
@@ -78,12 +80,13 @@ live in journal SI → **PIPELINE/MANUAL**; GEO supplementary signal pulled wher
 
 ## What is local now (updated 2026-06-25)
 
-**Genomes:** `data/genomes/` — 7 genomes (FASTA+GFF): E. coli, B. subtilis, MTB, P. aeruginosa, S. aureus, C. crescentus, H. volcanii.
+**Genomes:** `data/genomes/` — 8 genomes (FASTA+GFF): E. coli K-12 MG1655, E. coli BL21(DE3), B. subtilis, MTB, P. aeruginosa, S. aureus, C. crescentus, H. volcanii.
 
 **Promoters:** `data/promoters/PPD/` — 129,149 promoters; windows built in `data/datasets/promoters/ALL.tsv` (28,098 rows); 80/20 split + census committed to `splits/promoters/`.
 
 **RBS TSVs** (gitignored, in `data/rbs_database/raw/<SOURCE>/`):
-- `ecoli_riboret_tis_sites.tsv` — 2,296 rows (Meydan 2019; BW25113 K-12 only, BL21 dropped)
+- `ecoli_riboret_tis_sites.tsv` — 2,296 rows (Meydan 2019; BW25113 K-12, liftover to MG1655)
+- `ecoli_bl21_riboret_tis_sites.tsv` — 3,773 rows (Meydan 2019 BL21 arm; native NC_012971.2 coords)
 - `ecoli_tetrp_tis_sites.tsv` — 249 rows (Nakahigashi 2016)
 - `mtb_riboseq_tis_sites.tsv` — 3,569 rows (Sawyer 2021, 98% GFF-matched)
 - `bsub_riboseq_tis_sites.tsv` — 4,176 rows (Lalanne 2018)

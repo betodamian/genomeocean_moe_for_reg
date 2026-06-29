@@ -144,7 +144,8 @@ The dataset is now the centerpiece, because the team's main concern is **proving
 
   | Organism | Primary source | T1 TIS entries (est.) | Best leaderless-negative source |
   |---|---|---|---|
-  | *E. coli* K-12 | Meydan et al. 2019 Ribo-RET (GSE122129); Nakahigashi 2016 TetRP (PRJDB2960); Saito 2020 ΔaSD Ribo-seq (GSE135906) | ~2,000–4,290 | UNSD-leadered from Meydan supp. table (~54% SD → ~46% non-SD) |
+  | *E. coli* K-12 | Meydan et al. 2019 Ribo-RET (GSE122129); Nakahigashi 2016 TetRP (PRJDB2960); Saito 2020 ΔaSD Ribo-seq (GSE135906) | ~2,000–4,290 (2,296 K-12 pulled) | UNSD-leadered from Meydan supp. table (~54% SD → ~46% non-SD) |
+  | *E. coli* BL21(DE3) | Meydan et al. 2019 Ribo-RET, BL21 arm (GSE122129; reads → NC_012971.2) | 3,773 (native coords, no liftover) | Added as an additional same-species organism for extra TIS volume + a K-12↔B-strain cross-strain check. NOT a generalization test (BL21 core genes ≈ K-12); **must be sequence-clustered with K-12 before the 80/20 split to prevent leakage** (§5b) |
   | *M. tuberculosis* H37Rv | **Sawyer et al. 2021** Ribo-seq (Cell Reports, PMID 33535039, PMC7856553); Cortes 2013 dRNA-seq (SRP028740) | ~3,500 (3,569 pulled) | **497 ribosome-profiling-confirmed leaderless + ~1,040 dRNA-seq-confirmed leaderless** — primary leaderless negative class |
   | *B. subtilis* 168 | **Lalanne et al. 2018** Ribo-seq (Cell, PMID 29606352, PMC5978003); **Iwańska 2024** sporulation (Nat Commun, PMC11339384) | ~4,200 (4,176 + 4,332 pulled) | rare leaderless (~6%); use UNSD-leadered as negative |
   | *S. aureus* NCTC 8325 | Kohl et al. 2026 Nat Commun (extended-SD Ribo-RET, PMID 41680142); full TIS signal GEO **GSE299221** | ~2,700 (full Ribo-RET signal pulled; TIS table pending peak-calling) + 46 novel sORFs parsed | very few leaderless; extended SD motifs — note species-specific motif in SD window. Coords HG001 ≈ NCTC 8325 (~1.6 kb diff, near-trivial liftover) |

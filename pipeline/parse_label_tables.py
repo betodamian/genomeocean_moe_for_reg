@@ -34,7 +34,8 @@ RHO_FIELDS = ["source_id","organism","strain","site_id",
 # method detail (BCM vs depletion, retapamulin vs tetracycline) stays in notes.
 EVIDENCE_TIER = {
     # RBS — ribosome-profiling translation-initiation sites (T1 in vivo)
-    "ECOLI_RIBORET": "T1_riboseq",
+    "ECOLI_RIBORET":      "T1_riboseq",
+    "ECOLI_BL21_RIBORET": "T1_riboseq",
     "ECOLI_TETRP":   "T1_riboseq",
     "MTB_RIBOSEQ":   "T1_riboseq",
     "BSUB_RIBOSEQ":  "T1_riboseq",
@@ -701,6 +702,72 @@ def parse_ecoli_riboret():
 
 
 # ════════════════════════════════════════════════════════════════════════════
+# E. coli BL21(DE3) Ribo-RET — Meydan et al. 2019, BL21 arm of the same study
+# Source xlsx live in ECOLI_RIBORET/ (TableS1_pTIS, TableS2_Nterm_extensions).
+# Meydan mapped BL21 reads to CP001509.3 = NC_012971.2 (genome_build, GSE122129).
+# We add BL21(DE3) as its own organism (genome dir ecoli_BL21_DE3) so coordinates
+# anchor natively — validated: 2,753/2,753 pTIS land on exact start codons, so
+# NO liftover is needed (unlike the BW25113 arm). A different E. coli lineage =
+# extra TIS volume + a same-species cross-strain check. NOTE for splitting: BL21
+# core genes are near-identical to K-12, so BL21 windows MUST be clustered with
+# K-12 (MMseqs2/CD-HIT) to avoid train/val leakage (research_plan §5b).
+# ════════════════════════════════════════════════════════════════════════════
+
+def parse_ecoli_bl21_riboret():
+    src = "ECOLI_BL21_RIBORET"
+    d = os.path.join(RBS, "ECOLI_RIBORET")       # source xlsx shared with K-12 arm
+    rows = []
+
+    def _add(tis_type, gene, start_codon, start, stop, strand,
+             peak=None, rel_dens=None):
+        if start in ("", None) or stop in ("", None) or strand not in ("+", "-"):
+            return
+        try:
+            start, stop = int(start), int(stop)
+        except (TypeError, ValueError):
+            return
+        note = f"type={tis_type};strain_coords=BL21_DE3_native"   # no liftover
+        if peak not in (None, ""):
+            note += f";peak_height={peak}"
+        if rel_dens not in (None, ""):
+            note += f";rel_density={rel_dens}"
+        rows.append(dict(
+            source_id=src, organism="ecoli_BL21_DE3", strain="BL21_DE3",
+            gene_name=str(gene) if gene else "", locus_tag="",
+            tis_pos=start, tis_end=stop, strand=strand,
+            start_codon=str(start_codon) if start_codon else "",
+            ribo_density=rel_dens if rel_dens not in (None, "") else "",
+            sd_motif="", sd_pos_rel="", evidence_type="T1_riboseq", notes=note,
+        ))
+
+    # ── TableS1: primary TIS + internal TIS (BL21 columns) ────────────────
+    b1 = wb(os.path.join(d, "TableS1_pTIS.xlsx"))
+    # BL21-pTISs: Type, Gene, StartCodon, AAlen, Peak, Start, Stop, Strand
+    for r in sheet_rows(b1, "BL21-pTISs", skip=1):
+        _add(r[0], r[1], r[2], r[5], r[6], r[7], peak=r[4])
+    # BL21-specific iTISs: Type,Gene,Upstream,StartCodon,AAlen,Peak,Start,Stop,Strand,RelDensity
+    for r in sheet_rows(b1, "BL21-specific iTISs", skip=1):
+        _add(r[0], r[1], r[3], r[6], r[7], r[8], peak=r[5], rel_dens=r[9])
+    # Common iTISs: ...StartBL21(10),StopBL21(11),Strand(12),PeakBL21(7),RelDensBL21(14)
+    for r in sheet_rows(b1, "Common iTISs", skip=1):
+        _add(r[0], r[1], r[4], r[10], r[11], r[12], peak=r[7], rel_dens=r[14])
+    b1.close()
+
+    # ── TableS2: N-terminal extensions (BL21 columns) ─────────────────────
+    b2 = wb(os.path.join(d, "TableS2_Nterm_extensions.xlsx"))
+    # Common: ...StartBL21(8),StopBL21(9),Strand(10),PeakBL21(5)
+    for r in sheet_rows(b2, "Common", skip=1):
+        _add(r[0], r[1], r[2], r[8], r[9], r[10], peak=r[5])
+    # BL21-specific: Type,Gene,StartCodon,AAlen,Peak,Start,Stop,Strand
+    for r in sheet_rows(b2, "BL21-specific", skip=1):
+        _add(r[0], r[1], r[2], r[5], r[6], r[7], peak=r[4])
+    b2.close()
+
+    out = os.path.join(RBS, src, "ecoli_bl21_riboret_tis_sites.tsv")
+    return write_tsv(rows, RBS_FIELDS, out)
+
+
+# ════════════════════════════════════════════════════════════════════════════
 # B. subtilis Ribo-seq — Lalanne et al. 2018 Cell (PMID 29606352, PMC5978003)
 # File: data/rbs_database/raw/BSUB_RIBOSEQ/TableS1_synthesis_rates.xlsx
 # Sheet "2_ B. subtilis": Gene, Start, Stop, Strand(1=fwd/0=rev),
@@ -929,6 +996,7 @@ def main():
     print("=== RBS sources ===")
     totals = {}
     totals["ECOLI_RIBORET"] = parse_ecoli_riboret()
+    totals["ECOLI_BL21_RIBORET"] = parse_ecoli_bl21_riboret()
     totals["BSUB_RIBOSEQ"]  = parse_bsub_riboseq()
     totals["ECOLI_TETRP"]   = parse_ecoli_tetrp()
     totals["CAULO_RIBOSEQ"] = parse_caulo_riboseq()
