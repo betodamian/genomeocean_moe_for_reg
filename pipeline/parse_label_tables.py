@@ -233,13 +233,14 @@ def parse_saur_exsd():
                 sd_pos   = int(m.group(2))
 
         rows.append(dict(
-            source_id="SAUR_EXSD", organism="saureus_NCTC8325",
+            source_id="SAUR_EXSD", organism="saureus_HG001",
             strain="HG001", gene_name=None, locus_tag=f"HG001_sORF_{r[0]}",
             tis_pos=tis_pos, tis_end=tis_end, strand=strand,
             start_codon=codon, ribo_density=None,
             sd_motif=sd_motif, sd_pos_rel=sd_pos,
             evidence_type="T1_riboseq",
-            notes=f"novel_sORF;sd_raw={sd_raw};strain_note=HG001_not_NCTC8325",
+            notes=f"novel_sORF;sd_raw={sd_raw};coords=HG001_CP018205.1;"
+                  f"also_in_SAUR_RIBORET_peakcall",
         ))
 
     book.close()

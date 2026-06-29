@@ -1,6 +1,6 @@
 # Data Acquisition Manifest
 
-**Last updated:** 2026-06-24
+**Last updated:** 2026-06-29
 **Scope:** every dataset is sourced strictly from `context/research_plan.md` (§5d, §5f) and the
 per-element catalogs (`data/rbs_database/sources.tsv`, `data/rho_database/sources.tsv`).
 **Reproducibility (research_plan §14):** data is fetched by the committed scripts in
@@ -28,6 +28,7 @@ sequence substrate + structural scaffold (NOT a regulatory-label source). Script
 | GCF_000022005.1 | *C. crescentus* NA1000 | RBS 4th phylum (Alphaproteobacteria) | **PULLED** |
 | GCF_000025685.1 | *H. volcanii* DS2 | RBS archaeal domain-transfer | **PULLED** |
 | GCF_000022665.1 | *E. coli* BL21(DE3) (NC_012971.2) | RBS extra TIS + same-species cross-strain (Meydan BL21 arm) | **PULLED** |
+| GCF_001900185.1 | *S. aureus* HG001 (NZ_CP018205.1, 2,819,767 bp) | Ribo-RET peak-calling substrate — the Kohl 2026 wigs are anchored to HG001, not NCTC8325; HG001 length exactly matches wig chrom size (validated) | **PULLED** |
 
 Each: `<accession>_*_genomic.fna` + `<accession>_genomic.gff` in `data/genomes/<label>/`.
 
@@ -59,7 +60,7 @@ live in journal SI → **PIPELINE/MANUAL**; GEO supplementary signal pulled wher
 | *B. subtilis* Ribo-seq | Lalanne et al. 2018 *Cell*, PMID 29606352, PMC5978003. DOI 10.1016/j.cell.2018.03.007 | TableS1 xlsx downloaded manually 2026-06-25; re-parsed 2026-06-26 into unified schema → `bsub_riboseq_tis_sites.tsv` (4,176 TIS positions, strand-aware tis_pos, low-reads flag). **PULLED** (note: prior entry listed Lalanne 2017 / PMID 29144454 — wrong paper, corrected 2026-06-25; file renamed from bsub_riboret→bsub_riboseq) |
 | *B. subtilis* sporulation | Iwańska et al. 2024 *Nat Commun*, PMCID PMC11339384. DOI 10.1038/s41467-024-51654-6 | MOESM xlsx auto-fetched via EuropePMC. **PULLED** (note: prior entry listed Bhatt 2024 / PMID 39179838 — wrong paper, corrected 2026-06-25) |
 | *S. aureus* extended-SD (sORF subset) | Kohl 2026, *Nat Commun* PMID 41680142, PMC13009471. DOI 10.1038/s41467-026-69079-8 | MOESM3.xlsx auto-fetched 2026-06-25 → `saur_exsd_tis_sites.tsv` (46 novel sORF TIS, HG001). **PULLED** (subset only) |
-| *S. aureus* Ribo-RET (full TIS signal) | Kohl 2026 [Ribo-Seq], GEO **GSE299221** (+RNA-seq GSE299222) | `GSE299221_RAW.tar` (8.8 MB, 16 wig tracks: RNase1/MNase × Ret/ctl × 2 reps) pulled 2026-06-26 to `raw/SAUR_RIBORET/`. fixedStep wig, **chrom=HG001** (2,819,767 bp ≈ NCTC 8325 2,821,361, ~1.6 kb diff → near-trivial liftover). Translatome-wide TIS (~2,700 expected) requires Week-1 peak-calling on Ret-vs-ctl at start codons. **PIPELINE** |
+| *S. aureus* Ribo-RET (full TIS signal) | Kohl 2026 [Ribo-Seq], GEO **GSE299221** (+RNA-seq GSE299222) | `GSE299221_RAW.tar` (8.8 MB, 16 wig tracks: RNase1/MNase × Ret/ctl × 2 reps) pulled 2026-06-26 to `raw/SAUR_RIBORET/`. Peak-called 2026-06-29 by `pipeline/peakcall_saureus_tis.py` against HG001 (GCF_001900185.1): metagene offset +16 nt confirmed; two-tier caller (annotated lenient, novel strict); MNase+RNase1 both enzymes combined. Result: **2,122 TIS** (1,358 annotated, 764 novel); 80% published-sORF recovery (32/46 of the 40 with any signal); → `saur_riboret_tis_sites.tsv`. **PULLED** |
 | *C. crescentus* | Schrader 2014, GEO **GSE54883** | **PIPELINE** |
 | *H. volcanii* (archaea) | Gelsinger 2020, *NAR* 48:5201, PMID 32382758, PMC7261190. DOI 10.1093/nar/gkaa210 | Ribo_MS_TableS1_final.xlsx auto-fetched via EuropePMC 2026-06-25; parsed → `hvolc_riboseq_tis_sites.tsv` (1,555 rows: 1,413 annotated TIS + 142 novel/extension). **PULLED** |
 | *P. aeruginosa* | PGAP-derived from GCF_000006765.1 GFF (T2) | derivable from pulled genome |
@@ -78,9 +79,9 @@ live in journal SI → **PIPELINE/MANUAL**; GEO supplementary signal pulled wher
 
 ---
 
-## What is local now (updated 2026-06-25)
+## What is local now (updated 2026-06-29)
 
-**Genomes:** `data/genomes/` — 8 genomes (FASTA+GFF): E. coli K-12 MG1655, E. coli BL21(DE3), B. subtilis, MTB, P. aeruginosa, S. aureus, C. crescentus, H. volcanii.
+**Genomes:** `data/genomes/` — 9 genomes (FASTA+GFF): E. coli K-12 MG1655, E. coli BL21(DE3), B. subtilis, MTB, P. aeruginosa, S. aureus NCTC8325, S. aureus HG001 (added 2026-06-29 for Ribo-RET), C. crescentus, H. volcanii.
 
 **Promoters:** `data/promoters/PPD/` — 129,149 promoters; windows built in `data/datasets/promoters/ALL.tsv` (28,098 rows); 80/20 split + census committed to `splits/promoters/`.
 
@@ -92,19 +93,21 @@ live in journal SI → **PIPELINE/MANUAL**; GEO supplementary signal pulled wher
 - `bsub_riboseq_tis_sites.tsv` — 4,176 rows (Lalanne 2018)
 - `bsub_spore_tis_sites.tsv` — 4,332 rows (Iwańska 2024)
 - `caulo_riboseq_tis_sites.tsv` — 3,885 rows (Schrader 2014)
-- `saur_exsd_tis_sites.tsv` — 46 rows (Kohl 2026, novel sORFs only)
+- `saur_exsd_tis_sites.tsv` — 46 rows (Kohl 2026, novel sORFs; organism=saureus_HG001, fixed 2026-06-29)
+- `saur_riboret_tis_sites.tsv` — 2,122 rows (Kohl 2026, Ribo-RET peak-called 2026-06-29; 80% sORF recovery)
 - `hvolc_riboseq_tis_sites.tsv` — 1,555 rows (Gelsinger 2020: 1,413 annotated + 142 novel/extension)
 
 **Rho TSVs** (gitignored, in `data/rho_database/raw/<SOURCE>/`):
+- `ecoli_bcm_rho_sites.tsv` — 1,264 BSTs (Peters 2012)
 - `mtb_rhoduc_sites.tsv` — 303 RSRs (Botella 2017)
+- `mtb_rhoduc2_sites.tsv` — 439 high-confidence RD-TTS (Botella 2022)
 - `bsub_hselex_sites.tsv` — 4,789 rut peaks (B. subtilis H-SELEX, in vitro T2)
 - `intrinsic_termite_sites.tsv` — 5,646 sites (TERMITe, E. coli + B. subtilis only)
 - `rhotermpredict_sites.tsv` — 23,976 predictions (cross-check only, never headline)
 
-**All experimental label sources now PULLED.** Ready to proceed to window-building.
+**All experimental label sources now PULLED and parsed.** Total: 60,298 records across 15 sources.
 
-## Next (Week 1, per research_plan §16)
-- Manual downloads above (Peters 2012, Botella 2022)
+## Next
 - Build RBS 300-bp windows + same-context decoys → `data/datasets/rbs/`
 - Run RBS census gate + 80/20 ≤60%-identity split
 - Build Rho windows + census + split → `data/datasets/rho/`
