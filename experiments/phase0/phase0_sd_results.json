@@ -1,0 +1,183 @@
+{
+  "regression": {
+    "bsubtilis_168": {
+      "n_train": 3472,
+      "n_val": 872,
+      "gc_only": 0.0718,
+      "kmer4": 0.2182,
+      "embedding_only": 0.1477,
+      "routing_only": 0.0797,
+      "routing_concat": 0.1648
+    },
+    "ccrescentus_NA1000": {
+      "n_train": 3078,
+      "n_val": 770,
+      "gc_only": 0.0045,
+      "kmer4": 0.3263,
+      "embedding_only": 0.2255,
+      "routing_only": 0.0153,
+      "routing_concat": 0.2168
+    },
+    "ecoli_BL21_DE3": {
+      "n_train": 2542,
+      "n_val": 610,
+      "gc_only": -0.0301,
+      "kmer4": 0.3693,
+      "embedding_only": 0.0544,
+      "routing_only": 0.0379,
+      "routing_concat": 0.0714
+    },
+    "ecoli_K12_MG1655": {
+      "n_train": 1743,
+      "n_val": 421,
+      "gc_only": -0.0019,
+      "kmer4": 0.353,
+      "embedding_only": 0.1008,
+      "routing_only": 0.0523,
+      "routing_concat": 0.0929
+    },
+    "hvolcanii_DS2": {
+      "n_train": 1235,
+      "n_val": 307,
+      "gc_only": 0.026,
+      "kmer4": 0.1885,
+      "embedding_only": 0.0798,
+      "routing_only": -0.0136,
+      "routing_concat": 0.0669
+    },
+    "mtuberculosis_H37Rv": {
+      "n_train": 2798,
+      "n_val": 710,
+      "gc_only": 0.0485,
+      "kmer4": 0.3553,
+      "embedding_only": 0.2449,
+      "routing_only": 0.071,
+      "routing_concat": 0.2461
+    },
+    "saureus_HG001": {
+      "n_train": 1707,
+      "n_val": 431,
+      "gc_only": -0.0024,
+      "kmer4": 0.1444,
+      "embedding_only": 0.1002,
+      "routing_only": 0.1282,
+      "routing_concat": 0.1365
+    }
+  },
+  "binary": {
+    "bsubtilis_168": {
+      "n_train": 2389,
+      "n_val": 618,
+      "dG_tercile_cuts": [
+        -11.5,
+        -9.4
+      ],
+      "gc_only": 0.0703,
+      "kmer4": 0.2187,
+      "embedding_only": 0.1153,
+      "routing_only": 0.0962,
+      "routing_concat": 0.1475
+    },
+    "ccrescentus_NA1000": {
+      "n_train": 2084,
+      "n_val": 503,
+      "dG_tercile_cuts": [
+        -7.2,
+        -4.5
+      ],
+      "gc_only": 0.0046,
+      "kmer4": 0.3397,
+      "embedding_only": 0.2164,
+      "routing_only": 0.027,
+      "routing_concat": 0.1725
+    },
+    "ecoli_BL21_DE3": {
+      "n_train": 1734,
+      "n_val": 419,
+      "dG_tercile_cuts": [
+        -7.3,
+        -5.2
+      ],
+      "gc_only": -0.0111,
+      "kmer4": 0.3065,
+      "embedding_only": 0.0742,
+      "routing_only": -0.0098,
+      "routing_concat": 0.0469
+    },
+    "ecoli_K12_MG1655": {
+      "n_train": 1204,
+      "n_val": 280,
+      "dG_tercile_cuts": [
+        -7.6,
+        -5.6
+      ],
+      "gc_only": 0.0728,
+      "kmer4": 0.3709,
+      "embedding_only": 0.0139,
+      "routing_only": 0.1464,
+      "routing_concat": 0.0794
+    },
+    "hvolcanii_DS2": {
+      "n_train": 844,
+      "n_val": 213,
+      "dG_tercile_cuts": [
+        -6.3,
+        -3.9
+      ],
+      "gc_only": 0.0099,
+      "kmer4": 0.1171,
+      "embedding_only": 0.0326,
+      "routing_only": 0.0326,
+      "routing_concat": -0.0019
+    },
+    "mtuberculosis_H37Rv": {
+      "n_train": 1889,
+      "n_val": 475,
+      "dG_tercile_cuts": [
+        -8.0,
+        -4.2
+      ],
+      "gc_only": 0.0196,
+      "kmer4": 0.3226,
+      "embedding_only": 0.234,
+      "routing_only": 0.026,
+      "routing_concat": 0.2556
+    },
+    "saureus_HG001": {
+      "n_train": 1168,
+      "n_val": 308,
+      "dG_tercile_cuts": [
+        -10.2,
+        -7.4
+      ],
+      "gc_only": -0.0215,
+      "kmer4": 0.1844,
+      "embedding_only": 0.129,
+      "routing_only": 0.1114,
+      "routing_concat": 0.0817
+    }
+  },
+  "organisms": [
+    "bsubtilis_168",
+    "ccrescentus_NA1000",
+    "ecoli_BL21_DE3",
+    "ecoli_K12_MG1655",
+    "hvolcanii_DS2",
+    "mtuberculosis_H37Rv",
+    "saureus_HG001"
+  ],
+  "regression_macro": {
+    "gc_only": 0.0166,
+    "kmer4": 0.2793,
+    "embedding_only": 0.1362,
+    "routing_only": 0.053,
+    "routing_concat": 0.1422
+  },
+  "binary_macro": {
+    "gc_only": 0.0207,
+    "kmer4": 0.2657,
+    "embedding_only": 0.1165,
+    "routing_only": 0.0614,
+    "routing_concat": 0.1117
+  }
+}

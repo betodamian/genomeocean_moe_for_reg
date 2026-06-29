@@ -85,10 +85,51 @@ artifact of one genome dominating:
 
 ---
 
+## Addendum (2026-06-29) — RBS SD label fix: data defect confirmed, then a deeper finding
+
+The `SD vs UNSD` failure was first diagnosed as a **data defect** and fixed:
+- *Circular labels:* the original SD/UNSD call was a regex (`sd_label()` = "upstream
+  contains a GGAGG-like substring"), so the task was substring rediscovery — a k-mer
+  counter beat the model by construction.
+- *Cross-organism GC leak:* pooled, "SD" coincided with "low-GC species" (B. subtilis
+  85% SD @ 40% GC vs H. volcanii 24% SD @ 63% GC); within-organism the GC gap was ±0.005.
+
+**Fix applied** (`compute_sd_deltaG.py`, `phase0_sd_reanalysis.py`): relabel SD strength
+as the biophysical hybridization ΔG between each gene's upstream and that organism's own
+16S 3′ anti-SD (ViennaRNA), evaluated **within organism**. The continuous ΔG is
+biologically correct (B. subtilis strongest median −10.3; archaeal H. volcanii / MTB
+weakest −4.8 / −6.2). Same frozen features, new labels — no GPU re-run.
+
+**Result (macro-avg over 7 organisms, Spearman ρ predicting ΔG):**
+
+| view | ΔG regression ρ | strong-vs-weak SD MCC |
+|---|---|---|
+| gc_only | 0.017 | 0.021 |
+| kmer4 | **0.279** | **0.266** |
+| embedding_only | 0.136 | 0.117 |
+| routing_only | 0.053 | 0.061 |
+| routing_concat | 0.142 | 0.112 |
+
+Two things are now clear and honest:
+1. **The fix worked:** `gc_only` collapses to ~0 — the confound and circularity are gone.
+2. **The deeper finding:** even with clean labels, the frozen **pooled** MoE does not
+   expose SD — `kmer4` beats every model view, and **routing_only < embedding_only (P1
+   fails for SD)**. The SD signal is real and lives in local composition (k-mers recover
+   it), but mean-pooling over ~60 tokens washes out the 1–2-token SD motif, and the
+   router carries even less of it than the residual stream a dense model already has.
+
+This splits the remaining question in two, to be settled by the pre-registered method
+fix: **(a) pooling dilution** (real SD signal, lost to mean-pooling → recoverable with
+per-position / per-expert-bin routing + 60-bp windows) vs **(b) genuine non-
+specialization** (the router simply does not allocate a channel to a short regulatory
+motif, unlike Junho's structural tRNA/rRNA experts — a real negative for P3 on RBS-SD).
+Either outcome is publishable; the per-position re-extraction distinguishes them.
+
 ## Next steps
 
-1. **RBS SD recovery (pre-registered):** window-size/pooling sweep + per-position routing
-   views for `SD vs UNSD` (§5d, §4 mode-2). Highest priority follow-up.
+1. **RBS SD method fix (pre-registered, decisive):** re-extract RBS at 60/120 bp windows
+   + **per-position / per-expert-bin** routing views (not mean-pooled) and re-run the
+   ΔG re-analysis. Distinguishes pooling-dilution (a) from non-specialization (b) above.
 2. **Week 3 — detection vs baselines (P2):** run BPROM / Prodigal-RBS / RhoTermPredict
    and the dense gLMs (NT, DNABERT-2, Evo 2, ProkBERT, GO-dense) on the *same* held-out
    windows; compare AUPRC + boundary-F1.
