@@ -1,0 +1,560 @@
+{
+  "promoter_vs_intergenic": {
+    "element": "promoters",
+    "positives": [
+      "positive"
+    ],
+    "negatives": [
+      "decoy"
+    ],
+    "restrict_organism": null,
+    "n_train": 22504,
+    "n_val": 5594,
+    "n_train_pos": 11265,
+    "n_val_pos": 2784,
+    "views": {
+      "gc_only": {
+        "mcc": -0.024,
+        "mcc_ci": [
+          -0.0508,
+          0.0015
+        ],
+        "auroc": 0.5293,
+        "auprc": 0.555,
+        "auprc_ci": [
+          0.5354,
+          0.5748
+        ],
+        "f1": 0.4864,
+        "accuracy": 0.488
+      },
+      "kmer4": {
+        "mcc": 0.4076,
+        "mcc_ci": [
+          0.3829,
+          0.4324
+        ],
+        "auroc": 0.775,
+        "auprc": 0.7493,
+        "auprc_ci": [
+          0.7314,
+          0.7678
+        ],
+        "f1": 0.7002,
+        "accuracy": 0.7038
+      },
+      "embedding_only": {
+        "mcc": 0.44,
+        "mcc_ci": [
+          0.4184,
+          0.4653
+        ],
+        "auroc": 0.7929,
+        "auprc": 0.7905,
+        "auprc_ci": [
+          0.7756,
+          0.8058
+        ],
+        "f1": 0.713,
+        "accuracy": 0.7199
+      },
+      "routing_only": {
+        "mcc": 0.537,
+        "mcc_ci": [
+          0.5151,
+          0.557
+        ],
+        "auroc": 0.8547,
+        "auprc": 0.8769,
+        "auprc_ci": [
+          0.8674,
+          0.8864
+        ],
+        "f1": 0.7601,
+        "accuracy": 0.7681
+      },
+      "routing_concat": {
+        "mcc": 0.6295,
+        "mcc_ci": [
+          0.6096,
+          0.6493
+        ],
+        "auroc": 0.8998,
+        "auprc": 0.9099,
+        "auprc_ci": [
+          0.9013,
+          0.9188
+        ],
+        "f1": 0.8091,
+        "accuracy": 0.8144
+      }
+    },
+    "gate_pass": true,
+    "gate_margin_mcc": 0.6535,
+    "routing_concat_per_organism": {
+      "bsubtilis_168": {
+        "n": 271,
+        "mcc": 0.5127
+      },
+      "ecoli_K12_MG1655": {
+        "n": 3445,
+        "mcc": 0.6341
+      },
+      "hvolcanii_DS2": {
+        "n": 1878,
+        "mcc": 0.6381
+      }
+    }
+  },
+  "rbs_TIS_vs_intergenic": {
+    "element": "rbs",
+    "positives": [
+      "positive_SD",
+      "positive_UNSD"
+    ],
+    "negatives": [
+      "decoy_intergenic"
+    ],
+    "restrict_organism": null,
+    "n_train": 33131,
+    "n_val": 8261,
+    "n_train_pos": 16575,
+    "n_val_pos": 4121,
+    "views": {
+      "gc_only": {
+        "mcc": 0.0168,
+        "mcc_ci": [
+          -0.0048,
+          0.0381
+        ],
+        "auroc": 0.5368,
+        "auprc": 0.5227,
+        "auprc_ci": [
+          0.5091,
+          0.5386
+        ],
+        "f1": 0.5014,
+        "accuracy": 0.5084
+      },
+      "kmer4": {
+        "mcc": 0.4628,
+        "mcc_ci": [
+          0.4431,
+          0.4816
+        ],
+        "auroc": 0.8057,
+        "auprc": 0.7857,
+        "auprc_ci": [
+          0.772,
+          0.7996
+        ],
+        "f1": 0.732,
+        "accuracy": 0.7314
+      },
+      "embedding_only": {
+        "mcc": 0.6137,
+        "mcc_ci": [
+          0.5967,
+          0.6304
+        ],
+        "auroc": 0.879,
+        "auprc": 0.8586,
+        "auprc_ci": [
+          0.8461,
+          0.8704
+        ],
+        "f1": 0.8076,
+        "accuracy": 0.8068
+      },
+      "routing_only": {
+        "mcc": 0.7102,
+        "mcc_ci": [
+          0.6953,
+          0.7259
+        ],
+        "auroc": 0.9382,
+        "auprc": 0.9433,
+        "auprc_ci": [
+          0.9384,
+          0.9482
+        ],
+        "f1": 0.8545,
+        "accuracy": 0.8551
+      },
+      "routing_concat": {
+        "mcc": 0.8066,
+        "mcc_ci": [
+          0.7932,
+          0.8194
+        ],
+        "auroc": 0.9679,
+        "auprc": 0.9703,
+        "auprc_ci": [
+          0.9669,
+          0.9732
+        ],
+        "f1": 0.9034,
+        "accuracy": 0.9033
+      }
+    },
+    "gate_pass": true,
+    "gate_margin_mcc": 0.7898,
+    "routing_concat_per_organism": {
+      "bsubtilis_168": {
+        "n": 1741,
+        "mcc": 0.8198
+      },
+      "ccrescentus_NA1000": {
+        "n": 1540,
+        "mcc": 0.8779
+      },
+      "ecoli_BL21_DE3": {
+        "n": 1240,
+        "mcc": 0.7677
+      },
+      "ecoli_K12_MG1655": {
+        "n": 854,
+        "mcc": 0.7992
+      },
+      "hvolcanii_DS2": {
+        "n": 615,
+        "mcc": 0.6822
+      },
+      "mtuberculosis_H37Rv": {
+        "n": 1412,
+        "mcc": 0.7509
+      },
+      "saureus_HG001": {
+        "n": 859,
+        "mcc": 0.8976
+      }
+    }
+  },
+  "rbs_SD_vs_UNSD": {
+    "element": "rbs",
+    "positives": [
+      "positive_SD"
+    ],
+    "negatives": [
+      "positive_UNSD"
+    ],
+    "restrict_organism": null,
+    "n_train": 16575,
+    "n_val": 4121,
+    "n_train_pos": 10274,
+    "n_val_pos": 2592,
+    "views": {
+      "gc_only": {
+        "mcc": 0.2804,
+        "mcc_ci": [
+          0.252,
+          0.3101
+        ],
+        "auroc": 0.6665,
+        "auprc": 0.7379,
+        "auprc_ci": [
+          0.7189,
+          0.7583
+        ],
+        "f1": 0.6973,
+        "accuracy": 0.6457
+      },
+      "kmer4": {
+        "mcc": 0.3938,
+        "mcc_ci": [
+          0.3655,
+          0.4225
+        ],
+        "auroc": 0.7684,
+        "auprc": 0.8377,
+        "auprc_ci": [
+          0.8232,
+          0.8522
+        ],
+        "f1": 0.7511,
+        "accuracy": 0.7042
+      },
+      "embedding_only": {
+        "mcc": 0.3371,
+        "mcc_ci": [
+          0.3107,
+          0.3678
+        ],
+        "auroc": 0.7286,
+        "auprc": 0.804,
+        "auprc_ci": [
+          0.787,
+          0.8208
+        ],
+        "f1": 0.725,
+        "accuracy": 0.6753
+      },
+      "routing_only": {
+        "mcc": 0.2696,
+        "mcc_ci": [
+          0.2435,
+          0.2977
+        ],
+        "auroc": 0.6693,
+        "auprc": 0.7614,
+        "auprc_ci": [
+          0.7435,
+          0.7795
+        ],
+        "f1": 0.6835,
+        "accuracy": 0.6358
+      },
+      "routing_concat": {
+        "mcc": 0.335,
+        "mcc_ci": [
+          0.3049,
+          0.364
+        ],
+        "auroc": 0.7279,
+        "auprc": 0.8064,
+        "auprc_ci": [
+          0.7874,
+          0.8234
+        ],
+        "f1": 0.7229,
+        "accuracy": 0.6736
+      }
+    },
+    "gate_pass": false,
+    "gate_margin_mcc": 0.0546,
+    "routing_concat_per_organism": {
+      "bsubtilis_168": {
+        "n": 872,
+        "mcc": 0.1757
+      },
+      "ccrescentus_NA1000": {
+        "n": 770,
+        "mcc": 0.1585
+      },
+      "ecoli_BL21_DE3": {
+        "n": 610,
+        "mcc": 0.1927
+      },
+      "ecoli_K12_MG1655": {
+        "n": 421,
+        "mcc": 0.228
+      },
+      "hvolcanii_DS2": {
+        "n": 307,
+        "mcc": 0.13
+      },
+      "mtuberculosis_H37Rv": {
+        "n": 710,
+        "mcc": 0.2629
+      },
+      "saureus_HG001": {
+        "n": 431,
+        "mcc": 0.148
+      }
+    }
+  },
+  "rho_t1_vs_intergenic": {
+    "element": "rho",
+    "positives": [
+      "positive_rho_t1",
+      "positive_rho_t1_rsr"
+    ],
+    "negatives": [
+      "decoy_intergenic"
+    ],
+    "restrict_organism": null,
+    "n_train": 5268,
+    "n_val": 1307,
+    "n_train_pos": 714,
+    "n_val_pos": 179,
+    "views": {
+      "gc_only": {
+        "mcc": 0.5493,
+        "mcc_ci": [
+          0.4992,
+          0.6012
+        ],
+        "auroc": 0.9012,
+        "auprc": 0.5684,
+        "auprc_ci": [
+          0.4937,
+          0.649
+        ],
+        "f1": 0.5947,
+        "accuracy": 0.8363
+      },
+      "kmer4": {
+        "mcc": 0.5402,
+        "mcc_ci": [
+          0.4907,
+          0.589
+        ],
+        "auroc": 0.8946,
+        "auprc": 0.5829,
+        "auprc_ci": [
+          0.5057,
+          0.6599
+        ],
+        "f1": 0.5889,
+        "accuracy": 0.8355
+      },
+      "embedding_only": {
+        "mcc": 0.4822,
+        "mcc_ci": [
+          0.4136,
+          0.5357
+        ],
+        "auroc": 0.8449,
+        "auprc": 0.5392,
+        "auprc_ci": [
+          0.4642,
+          0.6207
+        ],
+        "f1": 0.5532,
+        "accuracy": 0.8393
+      },
+      "routing_only": {
+        "mcc": 0.6723,
+        "mcc_ci": [
+          0.6236,
+          0.7198
+        ],
+        "auroc": 0.9686,
+        "auprc": 0.8449,
+        "auprc_ci": [
+          0.7971,
+          0.8863
+        ],
+        "f1": 0.7074,
+        "accuracy": 0.8975
+      },
+      "routing_concat": {
+        "mcc": 0.6979,
+        "mcc_ci": [
+          0.6436,
+          0.7513
+        ],
+        "auroc": 0.9529,
+        "auprc": 0.8156,
+        "auprc_ci": [
+          0.7656,
+          0.8637
+        ],
+        "f1": 0.7398,
+        "accuracy": 0.922
+      }
+    },
+    "gate_pass": true,
+    "gate_margin_mcc": 0.1486,
+    "routing_concat_per_organism": {
+      "ecoli_K12_MG1655": {
+        "n": 901,
+        "mcc": 0.4749
+      },
+      "mtuberculosis_H37Rv": {
+        "n": 297,
+        "mcc": 0.5517
+      }
+    }
+  },
+  "rho_t1_vs_intrinsic_ecoli": {
+    "element": "rho",
+    "positives": [
+      "positive_rho_t1",
+      "positive_rho_t1_rsr"
+    ],
+    "negatives": [
+      "decoy_intrinsic"
+    ],
+    "restrict_organism": "ecoli_K12_MG1655",
+    "n_train": 1224,
+    "n_val": 318,
+    "n_train_pos": 121,
+    "n_val_pos": 30,
+    "views": {
+      "gc_only": {
+        "mcc": 0.0963,
+        "mcc_ci": [
+          -0.0139,
+          0.1958
+        ],
+        "auroc": 0.663,
+        "auprc": 0.3135,
+        "auprc_ci": [
+          0.1653,
+          0.482
+        ],
+        "f1": 0.2065,
+        "accuracy": 0.5409
+      },
+      "kmer4": {
+        "mcc": 0.1465,
+        "mcc_ci": [
+          0.0078,
+          0.277
+        ],
+        "auroc": 0.7103,
+        "auprc": 0.239,
+        "auprc_ci": [
+          0.1375,
+          0.41
+        ],
+        "f1": 0.2449,
+        "accuracy": 0.7673
+      },
+      "embedding_only": {
+        "mcc": 0.4111,
+        "mcc_ci": [
+          0.2351,
+          0.562
+        ],
+        "auroc": 0.8242,
+        "auprc": 0.3742,
+        "auprc_ci": [
+          0.2412,
+          0.5703
+        ],
+        "f1": 0.4667,
+        "accuracy": 0.8994
+      },
+      "routing_only": {
+        "mcc": 0.8146,
+        "mcc_ci": [
+          0.695,
+          0.9056
+        ],
+        "auroc": 0.9906,
+        "auprc": 0.9277,
+        "auprc_ci": [
+          0.8468,
+          0.9835
+        ],
+        "f1": 0.8308,
+        "accuracy": 0.9654
+      },
+      "routing_concat": {
+        "mcc": 0.7792,
+        "mcc_ci": [
+          0.6582,
+          0.8902
+        ],
+        "auroc": 0.9693,
+        "auprc": 0.8776,
+        "auprc_ci": [
+          0.7712,
+          0.9574
+        ],
+        "f1": 0.8,
+        "accuracy": 0.9623
+      }
+    },
+    "gate_pass": true,
+    "gate_margin_mcc": 0.6829,
+    "routing_concat_per_organism": {
+      "ecoli_K12_MG1655": {
+        "n": 318,
+        "mcc": 0.7792
+      }
+    }
+  }
+}

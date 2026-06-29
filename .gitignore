@@ -46,3 +46,6 @@ data/datasets/
 cborg_claude_api_key
 *.api_key
 *.secret
+
+# Large feature caches — regenerable via pipeline/submit_phase0.sh
+*.npz
