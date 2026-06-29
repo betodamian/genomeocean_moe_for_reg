@@ -1,0 +1,5 @@
+# leave-one-organism-out for 2-phylum Rho in-vivo cross-genome test (P5, P8)
+# Only T1 in-vivo organisms are in the LOO; B. subtilis is T2 in-vitro only
+held_out_organism	phylum	label_types	n_t1_clusters
+ecoli_K12_MG1655	Gammaproteobacteria	positive_rho_t1	151
+mtuberculosis_H37Rv	Actinobacteria	positive_rho_t1;positive_rho_t1_rsr	732
