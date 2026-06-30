@@ -64,3 +64,41 @@ region) — a cleaner version of the earlier SD test — so it can only help the
 - `pipeline/build_promoter_dinuc_test.py` — builds windows + verified dinuc-shuffles → `data/phase0/promoter_dinuc_ALL.tsv` (56,196 rows; 0 shuffle mismatches; GC identical real vs shuffle).
 - `pipeline/phase0_extract_promoter_dinuc.py` + `submit_phase0_promoter_dinuc.sh` — frozen-MoE feature extraction (cluster).
 - `pipeline/phase0_promoter_dinuc_analysis.py` — the MCC(P-P') − MCC(I-I') analysis, bootstrap CIs, routing-vs-embedding, per organism.
+
+## RESULTS (2026-06-30, cluster job 23523691, frozen MoE)
+
+MCC [95% bootstrap CI], committed ≤60% split:
+
+| view | P vs P' | I vs I' (baseline) | promoter signal | clean CI? |
+|---|---|---|---|---|
+| embedding | 0.365 [0.340,0.388] | 0.319 [0.295,0.344] | +0.045 | no (overlap) |
+| routing | 0.043 [0.018,0.069] | 0.057 [0.030,0.083] | −0.014 | no |
+| **concat** | **0.388 [0.364,0.412]** | **0.336 [0.312,0.360]** | **+0.052** | **YES** |
+
+Per-organism (concat signal): B. subtilis **+0.200**, H. volcanii +0.056, E. coli −0.027.
+
+### Two clean conclusions
+
+1. **There IS a genuine, confound-free promoter signal — but small.** concat +0.052 with
+   non-overlapping CIs (0.364 > 0.360). So GO-MoE *does* encode promoter-specific structure
+   beyond every controlled confound — it is not purely the downstream-genic artifact. Driven
+   by B. subtilis (+0.200; canonical σA −35/−10, "bland" intergenic baseline 0.11); E. coli
+   shows none because its intergenic sequence is itself highly structured (baseline 0.42),
+   masking any promoter excess.
+
+2. **The MoE routing channel does NOT carry it (P1 FAILS, confound-free).** routing signal
+   −0.014 (P-vs-P' 0.043 ≈ its baseline 0.057 — both ~0). The promoter signal that exists
+   lives in the **embedding / residual stream** (dense-accessible), not routing.
+
+### This OVERTURNS the earlier confounded reading
+
+The earlier zonal test (on the *confounded* full windows) tentatively read "routing 0.33 >
+embedding 0.29 at the core → P1 holds." That was an artifact: routing is excellent at the
+**genic-vs-intergenic structural axis** (Junho's specialty), which the confounded task
+rewarded. Confound-free, routing is **blind to the promoter motif itself** — exactly the
+pattern found for the short Shine-Dalgarno motif. So the honest, consistent story:
+
+> The MoE router specializes for long structural classes (tRNA/rRNA/genic context) but does
+> **not** allocate a routing channel to short regulatory motifs (SD, and now promoters under
+> a fully confound-free test). Detection-wise, a small genuine promoter signal exists, but it
+> is in the residual stream a dense model also has — not a MoE-necessity result for promoters.

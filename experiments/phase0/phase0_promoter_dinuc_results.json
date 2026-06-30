@@ -1,0 +1,89 @@
+{
+  "views": {
+    "embedding": {
+      "P_vs_Pshuf": {
+        "mcc": 0.3649,
+        "ci": [
+          0.3398,
+          0.3881
+        ],
+        "n_val": 5568
+      },
+      "I_vs_Ishuf": {
+        "mcc": 0.3194,
+        "ci": [
+          0.295,
+          0.344
+        ],
+        "n_val": 5620
+      },
+      "promoter_specific_signal": 0.0455,
+      "clean_CI_separation": false
+    },
+    "routing": {
+      "P_vs_Pshuf": {
+        "mcc": 0.0432,
+        "ci": [
+          0.0177,
+          0.0693
+        ],
+        "n_val": 5568
+      },
+      "I_vs_Ishuf": {
+        "mcc": 0.057,
+        "ci": [
+          0.0304,
+          0.0829
+        ],
+        "n_val": 5620
+      },
+      "promoter_specific_signal": -0.0138,
+      "clean_CI_separation": false
+    },
+    "concat": {
+      "P_vs_Pshuf": {
+        "mcc": 0.3879,
+        "ci": [
+          0.3639,
+          0.4116
+        ],
+        "n_val": 5568
+      },
+      "I_vs_Ishuf": {
+        "mcc": 0.3357,
+        "ci": [
+          0.3116,
+          0.3596
+        ],
+        "n_val": 5620
+      },
+      "promoter_specific_signal": 0.0522,
+      "clean_CI_separation": true
+    }
+  },
+  "moe_necessity": {
+    "routing_signal": -0.0138,
+    "embedding_signal": 0.0455,
+    "routing_gt_embedding": false
+  },
+  "per_organism_concat": {
+    "bsubtilis_168": {
+      "P_vs_Pshuf": 0.3088,
+      "I_vs_Ishuf": 0.1087,
+      "signal": 0.2001,
+      "n_val": 266
+    },
+    "ecoli_K12_MG1655": {
+      "P_vs_Pshuf": 0.3944,
+      "I_vs_Ishuf": 0.4214,
+      "signal": -0.027,
+      "n_val": 3444
+    },
+    "hvolcanii_DS2": {
+      "P_vs_Pshuf": 0.4309,
+      "I_vs_Ishuf": 0.3751,
+      "signal": 0.0558,
+      "n_val": 1858
+    }
+  }
+}
