@@ -75,3 +75,34 @@ core-zone estimate (concat ≈ 0.43, routing > embedding) as the honest motif-de
 
 Artifacts: `phase0_promoter_zonal_report.md`, `phase0_promoter_mutagenesis_report.md`
 (+ JSONs). Features regenerable via `pipeline/submit_phase0_promoter_robustness.sh`.
+
+## Addendum (2026-06-30) — "downstream held constant" motif decodability
+
+Direct test of the question "can we control for downstream genic content?": using the
+mutagenesis variants, `original` vs `*-scrambled` are the SAME windows with **byte-identical
+downstream** — so a probe separating them isolates the promoter motif's effect on the
+representation, confound-free. (The literal alternative — using genic windows AS the decoy —
+was rejected: it swaps the genic confound for a regulatory-vs-coding shortcut.)
+
+MCC (real promoter vs scrambled, window-disjoint 70/30, downstream identical):
+
+| scramble | embedding | routing | concat |
+|---|---|---|---|
+| −10/−35 hexamers | 0.05 | 0.115 | 0.095 |
+| core promoter (−40..−2) | 0.139 | 0.183 | 0.209 |
+| downstream control (ref) | 0.186 | 0.208 | 0.278 |
+
+Three honest reads, consistent with tests #1/#2:
+1. The promoter motif **is** weakly encoded (core concat 0.21 > 0; hexamers 0.10) — not zero,
+   but small.
+2. **routing > embedding for the motif** at every level (hexamers 0.115 vs 0.05; core 0.183
+   vs 0.139) — the small motif signal that exists is preferentially in the **MoE routing
+   channel** (the P1 direction holds at the motif).
+3. The model is still **more** perturbed by scrambling 38 bp of downstream gene (0.278) than
+   by scrambling the actual promoter (0.21) — it "attends" to downstream content more than
+   the motif.
+
+Net: de-confounded promoter detection from the upstream region is real but modest
+(zonal core ≈ 0.43 vs real intergenic; motif-specific effect ≈ 0.21), and what motif signal
+exists is routing-carried. The proper dataset-level fix (genic-matched decoy) would give the
+cleanest single headline number; this analysis already brackets it.
