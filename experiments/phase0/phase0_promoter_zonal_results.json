@@ -1,0 +1,60 @@
+{
+  "per_zone": {
+    "full": {
+      "gc": -0.024,
+      "kmer4": 0.4076,
+      "embedding": 0.44,
+      "routing": 0.537,
+      "concat": 0.6288
+    },
+    "core": {
+      "gc": 0.0424,
+      "kmer4": 0.2274,
+      "embedding": 0.2925,
+      "routing": 0.332,
+      "concat": 0.4324
+    },
+    "minus35": {
+      "gc": 0.0857,
+      "kmer4": 0.2513,
+      "embedding": 0.2485,
+      "routing": 0.2149,
+      "concat": 0.3208
+    },
+    "minus10": {
+      "gc": 0.0832,
+      "kmer4": 0.2456,
+      "embedding": 0.2653,
+      "routing": 0.2191,
+      "concat": 0.3443
+    },
+    "tss": {
+      "gc": 0.0434,
+      "kmer4": 0.1405,
+      "embedding": 0.2756,
+      "routing": 0.2214,
+      "concat": 0.3429
+    },
+    "down": {
+      "gc": 0.0503,
+      "kmer4": 0.4069,
+      "embedding": 0.4855,
+      "routing": 0.4484,
+      "concat": 0.5968
+    },
+    "farup": {
+      "gc": 0.012,
+      "kmer4": 0.2806,
+      "embedding": 0.2377,
+      "routing": 0.424,
+      "concat": 0.4594
+    }
+  },
+  "decision": {
+    "localized_to_core_promoter": false,
+    "localization_margin_mcc": -0.1644,
+    "p1_routing_gt_embedding_at_core": true,
+    "n_val": 5594,
+    "n_val_pos": 2784
+  }
+}

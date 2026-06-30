@@ -1,0 +1,71 @@
+{
+  "overall": {
+    "original": {
+      "mean_P_promoter": 0.7567,
+      "delta_P_vs_original": 0.0,
+      "frac_called_promoter": 0.7956
+    },
+    "m35": {
+      "mean_P_promoter": 0.7489,
+      "delta_P_vs_original": 0.0078,
+      "frac_called_promoter": 0.7953
+    },
+    "m10": {
+      "mean_P_promoter": 0.7531,
+      "delta_P_vs_original": 0.0036,
+      "frac_called_promoter": 0.8021
+    },
+    "m10m35": {
+      "mean_P_promoter": 0.7377,
+      "delta_P_vs_original": 0.0191,
+      "frac_called_promoter": 0.7917
+    },
+    "core": {
+      "mean_P_promoter": 0.7096,
+      "delta_P_vs_original": 0.0472,
+      "frac_called_promoter": 0.7586
+    },
+    "ctrl": {
+      "mean_P_promoter": 0.6675,
+      "delta_P_vs_original": 0.0892,
+      "frac_called_promoter": 0.7033
+    }
+  },
+  "per_organism": {
+    "bsubtilis_168": {
+      "original": 0.0,
+      "m35": -0.0186,
+      "m10": -0.0019,
+      "m10m35": -0.0211,
+      "core": -0.0296,
+      "ctrl": 0.0463,
+      "n": 133
+    },
+    "ecoli_K12_MG1655": {
+      "original": 0.0,
+      "m35": 0.0105,
+      "m10": 0.0047,
+      "m10m35": 0.0216,
+      "core": 0.0469,
+      "ctrl": 0.0795,
+      "n": 1722
+    },
+    "hvolcanii_DS2": {
+      "original": 0.0,
+      "m35": 0.0066,
+      "m10": 0.0025,
+      "m10m35": 0.0202,
+      "core": 0.0586,
+      "ctrl": 0.1134,
+      "n": 929
+    }
+  },
+  "decision": {
+    "causal_core_promoter": false,
+    "causal_hexamers_m10m35": false,
+    "delta_P_core": 0.0472,
+    "delta_P_m10m35": 0.0191,
+    "delta_P_ctrl": 0.0892,
+    "factor": 2.0
+  }
+}
