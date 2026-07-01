@@ -41,6 +41,7 @@ data/download/_tmp/
 
 # Generated datasets (windows/decoys) — regenerable via pipeline/
 data/datasets/
+data/phase0/
 
 # API keys and credentials
 cborg_claude_api_key
